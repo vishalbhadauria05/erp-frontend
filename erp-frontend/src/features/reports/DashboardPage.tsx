@@ -1,6 +1,7 @@
 import { type ElementType } from 'react';
 import { ShoppingCart, Factory, Package, Truck, TrendingUp, TrendingDown } from 'lucide-react';
 import clsx from 'clsx';
+import { RecentOrdersTable } from './components/RecentOrdersTable';
 
 type Trend = 'up' | 'down' | 'neutral';
 
@@ -112,6 +113,10 @@ export function DashboardPage() {
             </div>
           );
         })}
+      </div>
+
+      <div className="mt-6">
+        <RecentOrdersTable />
       </div>
     </div>
   );
