@@ -1,5 +1,5 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Users, Package, Box } from 'lucide-react';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { LayoutDashboard, ShoppingCart, Users, Package, Box, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
 
 const navItems = [
@@ -9,9 +9,19 @@ const navItems = [
   { to: '/inventory', label: 'Inventory', icon: Package },
 ];
 
+const routeNames: Record<string, string> = {
+  '/': 'Dashboard',
+  '/orders': 'Orders',
+  '/customers': 'Customers',
+  '/inventory': 'Inventory',
+};
+
 export function AppLayout() {
+  const location = useLocation();
+  const pageTitle = routeNames[location.pathname] ?? 'Dashboard';
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       <aside className="fixed left-0 top-0 h-screen w-64 border-r border-gray-200 bg-white flex flex-col">
         <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-100">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
@@ -53,9 +63,19 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <main className="ml-64 p-6">
-        <Outlet />
-      </main>
+      <div className="ml-64 flex-1 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-gray-200 bg-white px-8">
+          <div className="flex items-center gap-1.5 text-sm text-gray-500">
+            <span>Home</span>
+            <ChevronRight size={14} className="text-gray-400" aria-hidden="true" />
+            <span className="font-medium text-gray-900">{pageTitle}</span>
+          </div>
+        </header>
+
+        <main className="flex-1 p-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
