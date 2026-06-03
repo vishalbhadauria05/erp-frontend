@@ -1,3 +1,4 @@
+import { type ElementType } from 'react';
 import { ShoppingCart, Factory, Package, Truck, TrendingUp, TrendingDown } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -9,7 +10,7 @@ interface StatCard {
   sub: string;
   trend: Trend;
   trendLabel: string;
-  icon: React.ElementType;
+  icon: ElementType;
   iconBg: string;
   iconColor: string;
 }
