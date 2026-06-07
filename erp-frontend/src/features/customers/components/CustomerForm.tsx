@@ -9,13 +9,13 @@ const phoneRegex = /^[6-9]\d{9}$/;
 
 const schema = z.object({
   companyName: z.string().min(2, 'Company name is required'),
-  contactPerson: z.string(),
-  email: z.union([z.string().email('Invalid email address'), z.literal('')]),
-  phone: z.union([z.string().regex(phoneRegex, 'Enter valid 10-digit mobile number'), z.literal('')]),
-  gstNumber: z.union([z.string().regex(gstinRegex, 'Invalid GSTIN format (e.g. 07ABCDE1234F1Z5)'), z.literal('')]),
-  billingAddress: z.string(),
-  shippingAddress: z.string(),
-  creditLimit: z.coerce.number().min(0, 'Credit limit cannot be negative'),
+  contactPerson: z.string().optional(),
+  email: z.string().refine(val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), 'Invalid email address').optional(),
+  phone: z.string().refine(val => !val || phoneRegex.test(val), 'Enter valid 10-digit mobile number').optional(),
+  gstNumber: z.string().refine(val => !val || gstinRegex.test(val), 'Invalid GSTIN format (e.g. 07ABCDE1234F1Z5)').optional(),
+  billingAddress: z.string().optional(),
+  shippingAddress: z.string().optional(),
+  creditLimit: z.any().transform(v => Number(v) || 0).refine(val => val >= 0, 'Credit limit cannot be negative').optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
