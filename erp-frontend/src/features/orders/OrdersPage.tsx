@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
+import { api } from "../../services/api/client";
 
-const API_URL = "http://localhost:5000/api/orders";
+const API_URL = "/orders";
 
 export function OrdersPage() {
   const [loading, setLoading] = useState(false);
@@ -47,7 +47,7 @@ export function OrdersPage() {
     try {
       setLoading(true);
 
-      const response = await axios.post(API_URL, formData);
+      const response = await api.post(API_URL, formData);
 
       console.log("Saved Order:", response.data);
 

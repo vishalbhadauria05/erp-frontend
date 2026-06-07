@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Users, Package, Box, ChevronRight, Menu } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Package, Box, ChevronRight, LogOut, Menu } from 'lucide-react';
 import clsx from 'clsx';
+import { useAuth } from '../../features/auth/auth';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -18,6 +19,7 @@ const routeNames: Record<string, string> = {
 
 export function AppLayout() {
   const location = useLocation();
+  const { user, logout } = useAuth();
   const pageTitle = routeNames[location.pathname] ?? 'Dashboard';
 
   return (
@@ -79,10 +81,23 @@ export function AppLayout() {
 
       <div className="ml-16 flex-1 flex flex-col min-h-screen">
         <header className="sticky top-0 z-10 flex h-14 items-center border-b border-gray-200 bg-white px-8">
-          <div className="flex items-center gap-1.5 text-sm text-gray-500">
+          <div className="flex flex-1 items-center gap-1.5 text-sm text-gray-500">
             <span>Home</span>
             <ChevronRight size={14} className="text-gray-400" aria-hidden="true" />
             <span className="font-medium text-gray-900">{pageTitle}</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="max-w-64 truncate text-sm text-gray-500">{user?.email}</span>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+              aria-label="Logout"
+              title="Logout"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </header>
 
