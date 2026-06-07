@@ -1,9 +1,7 @@
 import { mockCustomers } from '../../mocks/customers';
 import type { Customer, CustomerFormData } from '../../features/customers/types';
-// import { api } from './client';
-
 export async function getCustomers(): Promise<{ data: Customer[] }> {
-  return { data: mockCustomers };
+  return { data: [...mockCustomers] };
 }
 
 export async function createCustomer(data: CustomerFormData): Promise<{ data: Customer }> {

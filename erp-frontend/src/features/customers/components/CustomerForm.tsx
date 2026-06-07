@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +18,8 @@ const schema = z.object({
   creditLimit: z.coerce.number().min(0, 'Credit limit cannot be negative'),
 });
 
+type FormValues = z.infer<typeof schema>;
+
 interface CustomerFormProps {
   onSubmit: (data: CustomerFormData) => void;
   isSubmitting: boolean;
@@ -24,7 +27,7 @@ interface CustomerFormProps {
   mode?: 'create' | 'edit';
 }
 
-function FormField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function FormField({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <div>
       <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
@@ -37,9 +40,8 @@ function FormField({ label, error, children }: { label: string; error?: string; 
 const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 
 export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'create' }: CustomerFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<CustomerFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(schema) as any,
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+    resolver: zodResolver(schema),
     defaultValues: {
       companyName: '',
       contactPerson: '',
@@ -53,8 +55,12 @@ export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'cr
     },
   });
 
+  const onValidSubmit = (values: FormValues) => {
+    onSubmit(values as unknown as CustomerFormData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-5">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Company Info</p>
         <div className="space-y-3">
