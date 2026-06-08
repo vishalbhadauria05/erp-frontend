@@ -24,8 +24,6 @@ const schema = z.object({
   sheetBreadth: z.string().refine(isPositiveNumber, 'Must be > 0'),
   ply: z.string().optional(),
   gsm: z.string().optional(),
-  
-  // New Exhaustive UI-only fields
   boxesPerSheet: z.string().optional(),
   duplexLength: z.string().optional(),
   duplexBreadth: z.string().optional(),
@@ -117,21 +115,33 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   });
 
   const onValidSubmit = (values: FormValues) => {
-    // Strip all UI-only calculation fields
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const {
-      boxesPerSheet, duplexLength, duplexBreadth, duplexGsm, duplexRate,
-      numberOf2Ply, twoPlyGsm, twoPlyRate, spotUvSize, spotUvCost, spotUvSheets,
-      lamRollSize, lamSheetLength, lamType, fevicolCostPerSheet, lamCostPerSheet,
-      sheeterRate, pastingRate, dieRate, stitchingRate, strappingRate, printingCost,
-      ...backendData
-    } = values;
-    /* eslint-enable @typescript-eslint/no-unused-vars */
+    const backendData = { ...values } as Partial<FormValues>;
+    delete backendData.boxesPerSheet;
+    delete backendData.duplexLength;
+    delete backendData.duplexBreadth;
+    delete backendData.duplexGsm;
+    delete backendData.duplexRate;
+    delete backendData.numberOf2Ply;
+    delete backendData.twoPlyGsm;
+    delete backendData.twoPlyRate;
+    delete backendData.spotUvSize;
+    delete backendData.spotUvCost;
+    delete backendData.spotUvSheets;
+    delete backendData.lamRollSize;
+    delete backendData.lamSheetLength;
+    delete backendData.lamType;
+    delete backendData.fevicolCostPerSheet;
+    delete backendData.lamCostPerSheet;
+    delete backendData.sheeterRate;
+    delete backendData.pastingRate;
+    delete backendData.dieRate;
+    delete backendData.stitchingRate;
+    delete backendData.strappingRate;
+    delete backendData.printingCost;
     
     onSubmit(backendData as unknown as OrderFormData);
   };
 
-  // --- Auto-calculations based on the exact prompt formulas ---
   const parseNum = (val: string | undefined) => parseFloat(val || '0');
   
   const qty = parseNum(watch('quantityOrdered'));
@@ -140,7 +150,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   const isLaminated = watch('laminated');
   const num2Ply = parseNum(watch('numberOf2Ply'));
 
-  // Duplex
   const dL = parseNum(watch('duplexLength'));
   const dB = parseNum(watch('duplexBreadth'));
   const dGsm = parseNum(watch('duplexGsm'));
@@ -151,37 +160,30 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   const duplexTotalWeight = duplexWeightKg * duplexQtyReq;
   const duplexTotalCost = duplexTotalWeight * dRate;
 
-  // 2-Ply
   const pGsm = parseNum(watch('twoPlyGsm'));
   const pRate = parseNum(watch('twoPlyRate'));
-  // Same weight formula as duplex
   const twoPlyWeightKg = (dL * dB) / 1550 * (pGsm / 1000);
   const twoPlyTotalWeight = twoPlyWeightKg * duplexQtyReq * num2Ply;
   const twoPlyTotalCost = twoPlyTotalWeight * pRate;
 
-  // Spot UV
   const spotSheets = parseNum(watch('spotUvSheets'));
   const spotCostPer = parseNum(watch('spotUvCost'));
   const spotUvTotalCost = spotSheets * spotCostPer;
 
-  // Lamination
   const lamCostPerSht = parseNum(watch('lamCostPerSheet'));
   const fevicolCost = parseNum(watch('fevicolCostPerSheet'));
   const laminationTotalCost = isLaminated ? (lamCostPerSht + fevicolCost) * duplexQtyReq : 0;
 
-  // Printing
-  const printingCost = isPrinted ? parseNum(watch('printingCost')) || 0 : 0; // Using placeholder if printed charges applied later
+  const printingCost = isPrinted ? parseNum(watch('printingCost')) || 0 : 0;
 
-  // Processing
-  const sheeterCost = parseNum(watch('sheeterRate')) * num2Ply; // per 2 ply
-  const pastingCost = parseNum(watch('pastingRate')) * duplexQtyReq; // per sheet
-  const dieCost = parseNum(watch('dieRate')) * duplexQtyReq; // per sheet
-  const stitchingCost = parseNum(watch('stitchingRate')) * qty; // per box
-  const strappingCost = parseNum(watch('strappingRate')) * (qty / 50); // assume 50 per bundle
+  const sheeterCost = parseNum(watch('sheeterRate')) * num2Ply;
+  const pastingCost = parseNum(watch('pastingRate')) * duplexQtyReq;
+  const dieCost = parseNum(watch('dieRate')) * duplexQtyReq;
+  const stitchingCost = parseNum(watch('stitchingRate')) * qty;
+  const strappingCost = parseNum(watch('strappingRate')) * (qty / 50);
 
   const processingTotal = sheeterCost + pastingCost + dieCost + stitchingCost + strappingCost;
 
-  // Final Per Box Cost = (Sum of all material + process costs) / qty
   const totalCostOverall = duplexTotalCost + twoPlyTotalCost + spotUvTotalCost + laminationTotalCost + printingCost + processingTotal;
   const perBoxCost = qty > 0 ? totalCostOverall / qty : 0;
 
@@ -191,7 +193,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   return (
     <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-6 bg-gray-50/50 p-2 rounded-xl">
       
-      {/* 1. Basic Info */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>1. Order & Party Info</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -210,7 +211,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
       </div>
 
-      {/* 2. Box Specs */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>2. Box Specifications</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
@@ -261,7 +261,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
       </div>
 
-      {/* 3. Duplex Costing */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>3. Duplex / Paper Board Cost</h3>
         <div className="grid grid-cols-4 gap-4 mb-4">
@@ -286,7 +285,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
       </div>
 
-      {/* 4. 2-Ply Costing */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>4. 2-Ply Cost</h3>
         <div className="grid grid-cols-3 gap-4 mb-4">
@@ -312,7 +310,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         )}
       </div>
 
-      {/* 5. Finishing & Spot UV */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>5. Finishing & Spot UV</h3>
         <div className="flex gap-6 mb-6">
@@ -346,7 +343,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
       </div>
 
-      {/* 6. Processing Cost */}
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>6. Processing Costs</h3>
         <div className="grid grid-cols-5 gap-3">
@@ -361,7 +357,6 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
       </div>
 
-      {/* 7. Cost Summary Card */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 shadow-xl border border-gray-700">
         <div className="flex items-center gap-3 mb-4 border-b border-gray-700 pb-4">
           <div className="bg-blue-500/20 p-2 rounded-lg">
