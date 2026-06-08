@@ -16,10 +16,6 @@ export function RecentOrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
   const fetchOrders = async () => {
     try {
       const res = await axios.get(API_URL);
@@ -30,6 +26,10 @@ export function RecentOrdersTable() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   if (loading) {
     return (
