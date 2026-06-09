@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,15 +28,39 @@ interface AddNewItemFormProps {
 }
 
 export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddNewItemFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      itemCode: '',
       type: 'RawMaterial',
       category: defaultCategory === 'All' ? STOCK_CATEGORIES[0] : defaultCategory,
       initialStock: '0',
       reorderLevel: '0'
     }
   });
+
+  const category = watch('category');
+  const gsm = watch('specifications.gsm');
+  const dimensions = watch('specifications.dimensions');
+
+  useEffect(() => {
+    if (!category) return;
+    // Get initials of category (e.g. "Duplex Reel" -> "DR")
+    const initials = category.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
+    
+    let suffix = '';
+    if (gsm && gsm.trim() !== '') {
+      suffix = `-${gsm.trim()}`;
+    } else if (dimensions && dimensions.trim() !== '') {
+      // take first part of dimensions e.g. "28x40"
+      suffix = `-${dimensions.split(' ')[0]}`;
+    } else {
+      // fallback if no specs provided
+      suffix = '-XXX';
+    }
+    
+    setValue('itemCode', `${initials}${suffix}`, { shouldValidate: true });
+  }, [category, gsm, dimensions, setValue]);
 
   const onValidSubmit = (data: FormValues) => {
     onSubmit(data);
@@ -51,8 +76,12 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
         <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Details</h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Item Code *</label>
-            <input {...register('itemCode')} placeholder="e.g. DR-350" className={inputClass} />
+            <label className="block text-xs font-medium text-gray-700 mb-1">Item Code (Auto-Generated) *</label>
+            <input 
+              {...register('itemCode')} 
+              readOnly
+              className="w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700 font-mono focus:outline-none cursor-not-allowed" 
+            />
             {errors.itemCode && <p className="mt-1 text-xs text-red-500">{errors.itemCode.message}</p>}
           </div>
           <div>
