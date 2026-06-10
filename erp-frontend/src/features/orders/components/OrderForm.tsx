@@ -357,9 +357,9 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
       </div>
 
-      <div className="bg-blue-50/50 rounded-xl p-6 border border-blue-100">
-        <div className="flex items-center gap-3 mb-4 border-b border-blue-200 pb-4">
-          <div className="bg-blue-100 p-2 rounded-lg">
+      <div className="bg-blue-50/50 dark:bg-gray-800/50 rounded-xl p-6 border border-blue-100 dark:border-neutral-800">
+        <div className="flex items-center gap-3 mb-4 border-b border-blue-200 dark:border-neutral-800 pb-4">
+          <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
             <Calculator className="w-5 h-5 text-blue-600" />
           </div>
           <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Tentative Cost Summary</h4>
@@ -373,7 +373,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Spot UV Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {spotUvTotalCost.toFixed(2)}</span></div>
         </div>
 
-        <div className="bg-white dark:bg-black rounded-lg p-4 flex justify-between items-center border border-blue-100 shadow-sm">
+        <div className="bg-white dark:bg-black rounded-lg p-4 flex justify-between items-center border border-blue-100 dark:border-neutral-800 shadow-sm">
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-medium">Per Box Cost</div>
             <div className="text-3xl font-bold text-green-600">₹ {perBoxCost.toFixed(2)}</div>
