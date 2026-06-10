@@ -25,8 +25,8 @@ const stats: StatCard[] = [
     trend: 'up',
     trendLabel: '+12% from last month',
     icon: ShoppingCart,
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-50 dark:bg-blue-900/20',
+    iconColor: 'text-blue-600 dark:text-blue-400',
   },
   {
     label: 'Active Production',
@@ -35,8 +35,8 @@ const stats: StatCard[] = [
     trend: 'up',
     trendLabel: '+5 since yesterday',
     icon: Factory,
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
+    iconBg: 'bg-amber-50 dark:bg-amber-900/20',
+    iconColor: 'text-amber-600 dark:text-amber-400',
   },
   {
     label: 'Inventory Items',
@@ -45,8 +45,8 @@ const stats: StatCard[] = [
     trend: 'down',
     trendLabel: '−3% from last week',
     icon: Package,
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   {
     label: 'Pending Deliveries',
@@ -55,8 +55,8 @@ const stats: StatCard[] = [
     trend: 'neutral',
     trendLabel: 'No change',
     icon: Truck,
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-violet-50 dark:bg-violet-900/20',
+    iconColor: 'text-violet-600 dark:text-violet-400',
   },
 ];
 
