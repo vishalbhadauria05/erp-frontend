@@ -25,9 +25,9 @@ export function AppLayout() {
   const pageTitle = routeNames[location.pathname] ?? 'Dashboard';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 transition-colors duration-200 flex">
       <aside
-        className="group fixed left-0 top-0 h-screen w-16 hover:w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-col transition-all duration-200 ease-in-out overflow-hidden z-20"
+        className="group fixed left-0 top-0 h-screen w-16 hover:w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black flex flex-col transition-all duration-200 ease-in-out overflow-hidden z-20"
       >
         <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-100 dark:border-gray-800 min-w-64">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600">
@@ -56,7 +56,7 @@ export function AppLayout() {
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 min-w-max',
                   isActive
                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-gray-800 hover:text-gray-900 dark:text-gray-100 dark:hover:text-white'
                 )
               }
             >
@@ -64,7 +64,7 @@ export function AppLayout() {
                 <>
                   <Icon
                     size={18}
-                    className={clsx('shrink-0', isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500')}
+                    className={clsx('shrink-0', isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 dark:text-gray-400')}
                     aria-hidden="true"
                   />
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 delay-75 whitespace-nowrap">
@@ -82,10 +82,10 @@ export function AppLayout() {
       </aside>
 
       <div className="ml-16 flex-1 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-8 transition-colors duration-200">
+        <header className="sticky top-0 z-10 flex h-14 items-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black px-8 transition-colors duration-200">
           <div className="flex flex-1 items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
             <span>Home</span>
-            <ChevronRight size={14} className="text-gray-400 dark:text-gray-600" aria-hidden="true" />
+            <ChevronRight size={14} className="text-gray-400 dark:text-gray-600 dark:text-gray-400" aria-hidden="true" />
             <span className="font-medium text-gray-900 dark:text-gray-100">{pageTitle}</span>
           </div>
 
@@ -93,7 +93,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 transition hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 transition hover:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-gray-800 hover:text-gray-900 dark:text-gray-100 dark:hover:text-white"
               aria-label="Toggle Theme"
               title="Toggle Theme"
             >
@@ -103,7 +103,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={() => void logout()}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 transition hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 transition hover:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-gray-800 hover:text-gray-900 dark:text-gray-100 dark:hover:text-white"
               aria-label="Logout"
               title="Logout"
             >

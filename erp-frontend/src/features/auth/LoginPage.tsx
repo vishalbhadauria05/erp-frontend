@@ -41,15 +41,15 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center px-4">
+      <div className="w-full max-w-sm rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600">
             <Box size={20} className="text-white" aria-hidden="true" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Amar Packers ERP</h1>
-            <p className="text-sm text-gray-500">Sign in to continue</p>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Amar Packers ERP</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Sign in to continue</p>
           </div>
         </div>
 
@@ -63,7 +63,7 @@ export function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 autoComplete="email"
-                className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2.5 pl-9 pr-3 text-sm text-gray-900 dark:text-gray-100 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 required
               />
             </div>
@@ -78,7 +78,7 @@ export function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
-                className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2.5 pl-9 pr-3 text-sm text-gray-900 dark:text-gray-100 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 required
               />
             </div>

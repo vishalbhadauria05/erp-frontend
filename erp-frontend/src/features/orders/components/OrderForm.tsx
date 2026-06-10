@@ -66,7 +66,7 @@ function FormField({ label, error, children }: { label: string; error?: string; 
   );
 }
 
-const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 
 export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormProps) {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
@@ -187,11 +187,11 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   const totalCostOverall = duplexTotalCost + twoPlyTotalCost + spotUvTotalCost + laminationTotalCost + printingCost + processingTotal;
   const perBoxCost = qty > 0 ? totalCostOverall / qty : 0;
 
-  const sectionClass = "bg-white p-5 rounded-xl border border-gray-200 shadow-sm";
-  const sectionTitleClass = "text-sm font-semibold text-gray-800 uppercase tracking-wide flex items-center mb-4 pb-2 border-b border-gray-100";
+  const sectionClass = "bg-white dark:bg-neutral-900 p-5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm";
+  const sectionTitleClass = "text-sm font-semibold text-gray-800 uppercase tracking-wide flex items-center mb-4 pb-2 border-b border-gray-100 dark:border-neutral-800";
 
   return (
-    <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-6 bg-gray-50/50 p-2 rounded-xl">
+    <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-6 bg-gray-50 dark:bg-black/50 p-2 rounded-xl">
       
       <div className={sectionClass}>
         <h3 className={sectionTitleClass}>1. Order & Party Info</h3>
@@ -322,7 +322,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         </div>
 
         {isLaminated && (
-          <div className="grid grid-cols-5 gap-3 mb-6 p-4 bg-gray-50 border border-gray-100 rounded-lg">
+          <div className="grid grid-cols-5 gap-3 mb-6 p-4 bg-gray-50 dark:bg-black border border-gray-100 dark:border-neutral-800 rounded-lg">
             <FormField label="Roll Size"><input {...register('lamRollSize')} className={inputClass} /></FormField>
             <FormField label="Sheet Len"><input {...register('lamSheetLength')} className={inputClass} /></FormField>
             <FormField label="Type">
@@ -352,8 +352,8 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           <FormField label="Stitch (Cost/Box)"><input {...register('stitchingRate')} type="number" step="0.1" className={inputClass} /></FormField>
           <FormField label="Strap (Cost/Bndl)"><input {...register('strappingRate')} type="number" step="0.1" className={inputClass} /></FormField>
         </div>
-        <div className="text-right text-xs text-gray-500 mt-2">
-          Total Processing: <strong className="text-gray-900">₹{processingTotal.toFixed(2)}</strong>
+        <div className="text-right text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Total Processing: <strong className="text-gray-900 dark:text-gray-100">₹{processingTotal.toFixed(2)}</strong>
         </div>
       </div>
 
@@ -362,25 +362,25 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           <div className="bg-blue-100 p-2 rounded-lg">
             <Calculator className="w-5 h-5 text-blue-600" />
           </div>
-          <h4 className="text-base font-semibold text-gray-900 uppercase tracking-wider">Tentative Cost Summary</h4>
+          <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Tentative Cost Summary</h4>
         </div>
         
         <div className="grid grid-cols-2 gap-x-12 gap-y-3 mb-6">
-          <div className="flex justify-between text-sm"><span className="text-gray-600">Duplex Cost:</span> <span className="text-gray-900 font-medium">₹ {duplexTotalCost.toFixed(2)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-600">Lamination Cost:</span> <span className="text-gray-900 font-medium">₹ {laminationTotalCost.toFixed(2)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-600">2-Ply Cost:</span> <span className="text-gray-900 font-medium">₹ {twoPlyTotalCost.toFixed(2)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-600">Processing Cost:</span> <span className="text-gray-900 font-medium">₹ {processingTotal.toFixed(2)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-600">Spot UV Cost:</span> <span className="text-gray-900 font-medium">₹ {spotUvTotalCost.toFixed(2)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Duplex Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {duplexTotalCost.toFixed(2)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Lamination Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {laminationTotalCost.toFixed(2)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">2-Ply Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {twoPlyTotalCost.toFixed(2)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Processing Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {processingTotal.toFixed(2)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Spot UV Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {spotUvTotalCost.toFixed(2)}</span></div>
         </div>
 
-        <div className="bg-white rounded-lg p-4 flex justify-between items-center border border-blue-100 shadow-sm">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg p-4 flex justify-between items-center border border-blue-100 shadow-sm">
           <div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Per Box Cost</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-medium">Per Box Cost</div>
             <div className="text-3xl font-bold text-green-600">₹ {perBoxCost.toFixed(2)}</div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-gray-500 uppercase tracking-wider mb-1 font-medium">Total Order Cost</div>
-            <div className="text-xl font-bold text-gray-900">₹ {totalCostOverall.toFixed(2)}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-medium">Total Order Cost</div>
+            <div className="text-xl font-bold text-gray-900 dark:text-gray-100">₹ {totalCostOverall.toFixed(2)}</div>
           </div>
         </div>
       </div>

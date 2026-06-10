@@ -37,7 +37,7 @@ function FormField({ label, error, children }: { label: string; error?: string; 
   );
 }
 
-const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 
 export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'create' }: CustomerFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -107,7 +107,7 @@ export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'cr
         </FormField>
       </div>
 
-      <div className="pt-2 border-t border-gray-100">
+      <div className="pt-2 border-t border-gray-100 dark:border-neutral-800">
         <button
           type="submit"
           disabled={isSubmitting}

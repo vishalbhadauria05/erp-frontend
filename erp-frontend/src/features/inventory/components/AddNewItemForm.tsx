@@ -66,21 +66,21 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
     onSubmit(data);
   };
 
-  const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 
   return (
     <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-5 p-1 pb-10">
       
       {/* Basic Info */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Details</h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-neutral-800 pb-2">Basic Details</h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Item Code (Auto-Generated) *</label>
             <input 
               {...register('itemCode')} 
               readOnly
-              className="w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-700 font-mono focus:outline-none cursor-not-allowed" 
+              className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-100 dark:bg-neutral-800 px-3 py-2 text-sm text-gray-700 font-mono focus:outline-none cursor-not-allowed" 
             />
             {errors.itemCode && <p className="mt-1 text-xs text-red-500">{errors.itemCode.message}</p>}
           </div>
@@ -124,7 +124,7 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
 
       {/* Specifications */}
       <div className="space-y-4 pt-2">
-        <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Specifications</h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-neutral-800 pb-2">Specifications</h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">GSM</label>
@@ -139,7 +139,7 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
 
       {/* Inventory Settings */}
       <div className="space-y-4 pt-2">
-        <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Inventory Settings</h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-neutral-800 pb-2">Inventory Settings</h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Initial Stock *</label>
@@ -158,7 +158,7 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
         </div>
       </div>
 
-      <div className="pt-6 border-t border-gray-200">
+      <div className="pt-6 border-t border-gray-200 dark:border-neutral-800">
         <button
           type="submit"
           disabled={isSubmitting}

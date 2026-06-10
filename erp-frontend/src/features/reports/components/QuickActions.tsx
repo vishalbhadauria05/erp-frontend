@@ -38,7 +38,7 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-900 shadow-sm">
       <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Quick Actions</h2>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Common tasks and shortcuts</p>
@@ -51,7 +51,7 @@ export function QuickActions() {
             <li key={action.name}>
               <Link
                 to={action.href}
-                className="group flex items-center gap-3 rounded-lg px-3 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="group flex items-center gap-3 rounded-lg px-3 py-3 hover:bg-gray-50 dark:bg-black dark:hover:bg-gray-800 transition-colors"
               >
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${action.iconBg} dark:bg-opacity-20`}>
                   <Icon size={18} className={action.iconColor} aria-hidden="true" />

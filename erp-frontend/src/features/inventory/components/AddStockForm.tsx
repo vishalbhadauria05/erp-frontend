@@ -41,13 +41,13 @@ export function AddStockForm({ inventoryId, itemName, unit, onSubmit, isSubmitti
     });
   };
 
-  const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 
   return (
     <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-5 p-1">
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-6">
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Selected Item</p>
-        <p className="text-sm font-semibold text-gray-900">{itemName}</p>
+      <div className="bg-gray-50 dark:bg-black rounded-lg p-4 border border-gray-100 dark:border-neutral-800 mb-6">
+        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider mb-1">Selected Item</p>
+        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{itemName}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -93,7 +93,7 @@ export function AddStockForm({ inventoryId, itemName, unit, onSubmit, isSubmitti
         />
       </div>
 
-      <div className="pt-4 border-t border-gray-100">
+      <div className="pt-4 border-t border-gray-100 dark:border-neutral-800">
         <button
           type="submit"
           disabled={isSubmitting}
