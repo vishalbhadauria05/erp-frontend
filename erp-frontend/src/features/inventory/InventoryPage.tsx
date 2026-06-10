@@ -103,7 +103,7 @@ export function InventoryPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-0 dark:bg-black">
           <StockTable 
             data={inventoryData?.data || []} 
             isLoading={isInventoryLoading} 
