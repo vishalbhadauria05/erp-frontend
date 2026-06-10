@@ -37,8 +37,8 @@ export function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Orders</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage production orders and specifications.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Orders</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage production orders and specifications.</p>
         </div>
         <button
           onClick={() => setIsSlideOverOpen(true)}
@@ -50,9 +50,9 @@ export function OrdersPage() {
       </div>
 
       {/* Filters and Table */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
         {/* Toolbar */}
-        <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-4 justify-between bg-gray-50/50">
+        <div className="p-4 border-b border-gray-200 dark:border-neutral-800 flex flex-col sm:flex-row gap-4 justify-between bg-gray-50 dark:bg-black">
           <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
@@ -67,8 +67,8 @@ export function OrdersPage() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50 text-gray-700 font-medium border-b border-gray-200 uppercase text-xs tracking-wider">
+          <table className="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+            <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 font-medium border-b border-gray-200 dark:border-neutral-800 uppercase text-xs tracking-wider">
               <tr>
                 <th className="px-6 py-4">Order #</th>
                 <th className="px-6 py-4">Customer</th>
@@ -80,7 +80,7 @@ export function OrdersPage() {
             <tbody className="divide-y divide-gray-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                     <div className="flex justify-center items-center gap-3">
                       <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                       Loading orders...
@@ -93,19 +93,19 @@ export function OrdersPage() {
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-base font-medium text-gray-900">No orders found</p>
+                    <p className="text-base font-medium text-gray-900 dark:text-gray-100">No orders found</p>
                     <p className="text-sm mt-1">Try adjusting your search or create a new order.</p>
                   </td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order._id || order.orderNumber} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={order._id || order.orderNumber} className="hover:bg-gray-50 dark:bg-black transition-colors">
                     <td className="px-6 py-4 font-medium text-blue-600 whitespace-nowrap">
                       {order.orderNumber}
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900">
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
                       {order.customerName || '-'}
                     </td>
                     <td className="px-6 py-4">
@@ -122,17 +122,17 @@ export function OrdersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-xs space-y-1">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-200">
                           {order.boxType || 'No Type'}
                         </span>
                         {(order.length || order.breadth || order.height) && (
-                          <div className="text-gray-500 mt-1">
+                          <div className="text-gray-500 dark:text-gray-400 mt-1">
                             L×B×H: {order.length || 0}×{order.breadth || 0}×{order.height || 0}
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
                       {order.quantityOrdered || 0}
                     </td>
                   </tr>

@@ -25,8 +25,8 @@ const stats: StatCard[] = [
     trend: 'up',
     trendLabel: '+12% from last month',
     icon: ShoppingCart,
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-50 dark:bg-blue-900/20',
+    iconColor: 'text-blue-600 dark:text-blue-400',
   },
   {
     label: 'Active Production',
@@ -35,8 +35,8 @@ const stats: StatCard[] = [
     trend: 'up',
     trendLabel: '+5 since yesterday',
     icon: Factory,
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
+    iconBg: 'bg-amber-50 dark:bg-amber-900/20',
+    iconColor: 'text-amber-600 dark:text-amber-400',
   },
   {
     label: 'Inventory Items',
@@ -45,8 +45,8 @@ const stats: StatCard[] = [
     trend: 'down',
     trendLabel: '−3% from last week',
     icon: Package,
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   {
     label: 'Pending Deliveries',
@@ -55,8 +55,8 @@ const stats: StatCard[] = [
     trend: 'neutral',
     trendLabel: 'No change',
     icon: Truck,
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-violet-50 dark:bg-violet-900/20',
+    iconColor: 'text-violet-600 dark:text-violet-400',
   },
 ];
 
@@ -84,8 +84,8 @@ export function DashboardPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Overview of your operations today.</p>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Overview of your operations today.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -94,7 +94,7 @@ export function DashboardPage() {
           return (
             <div
               key={stat.label}
-              className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm"
+              className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/50 px-5 py-4 shadow-sm"
             >
               <div className="flex items-start justify-between">
                 <div className={clsx('flex h-10 w-10 items-center justify-center rounded-lg', stat.iconBg)}>
@@ -103,13 +103,13 @@ export function DashboardPage() {
               </div>
 
               <div className="mt-4">
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="mt-0.5 text-sm font-medium text-gray-600">{stat.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
+                <p className="mt-0.5 text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
               </div>
 
-              <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
+              <div className="mt-3 flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3">
                 <TrendBadge trend={stat.trend} label={stat.trendLabel} />
-                <span className="text-xs text-gray-400">{stat.sub}</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400">{stat.sub}</span>
               </div>
             </div>
           );

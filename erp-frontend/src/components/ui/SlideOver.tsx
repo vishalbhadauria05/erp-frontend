@@ -31,16 +31,16 @@ export function SlideOver({ isOpen, onClose, title, children }: SlideOverProps) 
       />
 
       <div
-        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col bg-white dark:bg-black shadow-xl transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="slide-over-title"
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 id="slide-over-title" className="text-base font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-neutral-800 px-6 py-4">
+          <h2 id="slide-over-title" className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:bg-neutral-800 hover:text-gray-600 dark:text-gray-400 transition-colors"
             aria-label="Close panel"
           >
             <X size={18} />

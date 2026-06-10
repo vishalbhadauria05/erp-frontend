@@ -33,36 +33,36 @@ export function RecentOrdersTable() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white p-6">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/50 p-6 text-gray-900 dark:text-gray-100">
         Loading Orders...
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border bg-white shadow-sm">
-      <div className="border-b px-5 py-4">
-        <h2 className="text-lg font-semibold">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/50 shadow-sm">
+      <div className="border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Recent Orders
         </h2>
       </div>
 
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50 text-left">
-            <th className="p-3">Order</th>
-            <th className="p-3">Customer</th>
-            <th className="p-3">Item</th>
-            <th className="p-3">Qty</th>
-            <th className="p-3">Status</th>
+          <tr className="bg-gray-50 dark:bg-gray-800/50 text-left text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
+            <th className="p-3 font-medium text-sm">Order</th>
+            <th className="p-3 font-medium text-sm">Customer</th>
+            <th className="p-3 font-medium text-sm">Item</th>
+            <th className="p-3 font-medium text-sm">Qty</th>
+            <th className="p-3 font-medium text-sm">Status</th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="text-sm text-gray-700 dark:text-gray-300">
           {orders.map((order) => (
             <tr
               key={order._id}
-              className="border-t hover:bg-gray-50"
+              className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-black dark:hover:bg-gray-800/50 transition-colors"
             >
               <td className="p-3">
                 {order.orderNumber}
@@ -81,7 +81,7 @@ export function RecentOrdersTable() {
               </td>
 
               <td className="p-3">
-                <span className="rounded bg-yellow-100 px-2 py-1 text-sm">
+                <span className="rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-500 px-2 py-1 text-xs font-medium">
                   {order.status}
                 </span>
               </td>

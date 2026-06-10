@@ -4,7 +4,7 @@ import type { OrderStatus } from '../../mocks/orders';
 const statusConfig: Record<OrderStatus, { label: string; className: string }> = {
   draft: {
     label: 'Draft',
-    className: 'bg-gray-100 text-gray-600',
+    className: 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-400',
   },
   confirmed: {
     label: 'Confirmed',

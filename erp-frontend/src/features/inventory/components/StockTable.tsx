@@ -13,7 +13,7 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
     return (
       <div className="flex justify-center items-center py-12">
         <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-3 text-sm text-gray-500">Loading stock data...</span>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Loading stock data...</span>
       </div>
     );
   }
@@ -22,16 +22,16 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
     return (
       <div className="text-center py-12 px-4">
         <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-base font-medium text-gray-900">No stock items found</p>
-        <p className="text-sm text-gray-500 mt-1">There are no items in this category yet.</p>
+        <p className="text-base font-medium text-gray-900 dark:text-gray-100">No stock items found</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">There are no items in this category yet.</p>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm text-gray-600">
-        <thead className="bg-gray-50 text-gray-700 font-medium border-b border-gray-200 uppercase text-xs tracking-wider">
+      <table className="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+        <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 font-medium border-b border-gray-200 dark:border-neutral-800 uppercase text-xs tracking-wider">
           <tr>
             <th className="px-6 py-4">Item Details</th>
             <th className="px-6 py-4">Specifications</th>
@@ -46,25 +46,25 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
             const isLowStock = record.currentStock <= record.reorderLevel;
 
             return (
-              <tr key={record._id} className="hover:bg-gray-50/50 transition-colors">
+              <tr key={record._id} className="hover:bg-gray-50 dark:bg-black transition-colors">
                 <td className="px-6 py-4">
-                  <div className="font-medium text-gray-900">{item.itemName}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">Code: {item.itemCode}</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{item.itemName}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Code: {item.itemCode}</div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-xs space-y-1">
-                    {item.specifications.gsm && <div>GSM: <span className="font-medium text-gray-900">{item.specifications.gsm}</span></div>}
-                    {item.specifications.dimensions && <div>Size: <span className="font-medium text-gray-900">{item.specifications.dimensions}</span></div>}
+                    {item.specifications.gsm && <div>GSM: <span className="font-medium text-gray-900 dark:text-gray-100">{item.specifications.gsm}</span></div>}
+                    {item.specifications.dimensions && <div>Size: <span className="font-medium text-gray-900 dark:text-gray-100">{item.specifications.dimensions}</span></div>}
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-200">
                     {record.warehouseLocation || 'Unassigned'}
                   </span>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <span className={`text-base font-bold ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
+                    <span className={`text-base font-bold ${isLowStock ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'}`}>
                       {record.currentStock} {item.unitOfMeasure}
                     </span>
                     {isLowStock && (
@@ -73,7 +73,7 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Reserved: {record.reservedStock} {item.unitOfMeasure}
                   </div>
                 </td>

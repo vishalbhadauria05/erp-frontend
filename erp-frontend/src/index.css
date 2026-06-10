@@ -1,7 +1,12 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 body {

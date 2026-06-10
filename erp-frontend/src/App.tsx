@@ -14,7 +14,7 @@ function ProtectedRoutes() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-sm text-gray-500">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
         Checking access...
       </div>
     );
