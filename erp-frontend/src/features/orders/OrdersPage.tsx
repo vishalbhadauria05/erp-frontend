@@ -50,7 +50,7 @@ export function OrdersPage() {
       </div>
 
       {/* Filters and Table */}
-      <div className="bg-white dark:bg-black border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-200 dark:border-neutral-800 flex flex-col sm:flex-row gap-4 justify-between bg-gray-50 dark:bg-black">
           <div className="relative max-w-md w-full">

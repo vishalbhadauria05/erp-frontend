@@ -37,7 +37,7 @@ function FormField({ label, error, children }: { label: string; error?: string; 
   );
 }
 
-const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-slate-700/50 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-slate-800/40 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors';
+const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-neutral-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-inner';
 
 export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'create' }: CustomerFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({

@@ -66,7 +66,7 @@ function FormField({ label, error, children }: { label: string; error?: string; 
   );
 }
 
-const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-slate-700/50 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-slate-800/40 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors';
+const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-neutral-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-inner';
 
 export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormProps) {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
@@ -187,7 +187,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   const totalCostOverall = duplexTotalCost + twoPlyTotalCost + spotUvTotalCost + laminationTotalCost + printingCost + processingTotal;
   const perBoxCost = qty > 0 ? totalCostOverall / qty : 0;
 
-  const sectionClass = "bg-white dark:bg-black p-5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm";
+  const sectionClass = "bg-white dark:bg-gray-800/50 p-5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm";
   const sectionTitleClass = "text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide flex items-center mb-4 pb-2 border-b border-gray-100 dark:border-neutral-800";
 
   return (
@@ -277,7 +277,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
             <input {...register('duplexRate')} type="number" step="any" min="0" className={inputClass} />
           </FormField>
         </div>
-        <div className="bg-blue-50 dark:bg-gray-800/50 text-blue-800 dark:text-gray-200 p-3 rounded-lg text-xs flex justify-between items-center border border-transparent dark:border-neutral-800">
+        <div className="bg-blue-50 dark:bg-black text-blue-800 dark:text-gray-200 p-3 rounded-lg text-xs flex justify-between items-center border border-transparent dark:border-neutral-800">
           <span>Area: <strong>{dL * dB} sq in</strong></span>
           <span>Weight/Sheet: <strong>{duplexWeightKg > 0 ? duplexWeightKg.toFixed(3) : 0} kg</strong></span>
           <span>Qty Req: <strong>{duplexQtyReq > 0 ? duplexQtyReq : 0} sheets</strong></span>
@@ -304,7 +304,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           </FormField>
         </div>
         {num2Ply > 0 && (
-          <div className="bg-blue-50 dark:bg-gray-800/50 text-blue-800 dark:text-gray-200 border border-transparent dark:border-neutral-800 p-3 rounded-lg text-xs text-right">
+          <div className="bg-blue-50 dark:bg-black text-blue-800 dark:text-gray-200 border border-transparent dark:border-neutral-800 p-3 rounded-lg text-xs text-right">
             2-Ply Total Cost: <strong>₹{twoPlyTotalCost.toFixed(2)}</strong>
           </div>
         )}
@@ -373,7 +373,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Spot UV Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {spotUvTotalCost.toFixed(2)}</span></div>
         </div>
 
-        <div className="bg-white dark:bg-black rounded-lg p-4 flex justify-between items-center border border-blue-100 dark:border-neutral-800 shadow-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-lg p-4 flex justify-between items-center border border-blue-100 dark:border-neutral-800 shadow-sm">
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 font-medium">Per Box Cost</div>
             <div className="text-3xl font-bold text-green-600">₹ {perBoxCost.toFixed(2)}</div>

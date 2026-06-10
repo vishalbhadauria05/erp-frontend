@@ -78,7 +78,7 @@ export function InventoryPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col h-[calc(100vh-140px)]">
+      <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col h-[calc(100vh-140px)]">
         
         {/* Tabs Header */}
         <div className="border-b border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-black px-4 pt-4">

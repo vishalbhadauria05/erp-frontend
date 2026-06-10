@@ -42,7 +42,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-sm">
+      <div className="w-full max-w-sm rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-gray-800/50 p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600">
             <Box size={20} className="text-white" aria-hidden="true" />

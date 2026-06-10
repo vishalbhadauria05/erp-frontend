@@ -104,7 +104,7 @@ export function CustomersPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-black shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-gray-800/50 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

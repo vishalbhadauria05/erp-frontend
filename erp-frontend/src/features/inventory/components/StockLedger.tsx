@@ -33,7 +33,7 @@ export function StockLedger({ transactions, isLoading, unit }: StockLedgerProps)
         const isIN = txn.type === 'IN';
         
         return (
-          <div key={txn._id} className="bg-white dark:bg-black p-4 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm flex items-start justify-between gap-4">
+          <div key={txn._id} className="bg-white dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className={`p-2 rounded-lg mt-0.5 ${isIN ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
                 {isIN ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
