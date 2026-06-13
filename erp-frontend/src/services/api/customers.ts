@@ -1,28 +1,26 @@
-import { mockCustomers } from '../../mocks/customers';
+import { api } from './client';
 import type { Customer, CustomerFormData } from '../../features/customers/types';
+
 export async function getCustomers(): Promise<{ data: Customer[] }> {
-  return { data: [...mockCustomers] };
+  try {
+    const res = await api.get('/customers');
+    return { data: res.data.data };
+  } catch (error) {
+    console.error("Error fetching customers data", error);
+    return { data: [] };
+  }
 }
 
 export async function createCustomer(data: CustomerFormData): Promise<{ data: Customer }> {
-  const newCustomer: Customer = {
-    ...data,
-    _id: Date.now().toString(),
-    outstandingBalance: 0,
-    createdAt: new Date().toISOString(),
-  };
-  mockCustomers.push(newCustomer);
-  return { data: newCustomer };
+  const res = await api.post('/customers', data);
+  return { data: res.data.data };
 }
 
 export async function updateCustomer(id: string, data: CustomerFormData): Promise<{ data: Customer }> {
-  const index = mockCustomers.findIndex((c) => c._id === id);
-  if (index === -1) throw new Error('Customer not found');
-  mockCustomers[index] = { ...mockCustomers[index], ...data };
-  return { data: mockCustomers[index] };
+  const res = await api.put(`/customers/${id}`, data);
+  return { data: res.data.data };
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
-  const index = mockCustomers.findIndex((c) => c._id === id);
-  if (index !== -1) mockCustomers.splice(index, 1);
+  await api.delete(`/customers/${id}`);
 }
