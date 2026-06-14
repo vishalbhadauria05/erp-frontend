@@ -1,4 +1,4 @@
-import { Package, AlertTriangle, History } from 'lucide-react';
+import { Package, AlertTriangle, History, Trash2 } from 'lucide-react';
 import type { InventoryRecord } from '../types';
 
 interface StockTableProps {
@@ -6,9 +6,10 @@ interface StockTableProps {
   isLoading: boolean;
   onViewLedger: (id: string) => void;
   onAddStock: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockTableProps) {
+export function StockTable({ data, isLoading, onViewLedger, onAddStock, onDelete }: StockTableProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -43,6 +44,7 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
         <tbody className="divide-y divide-gray-100">
           {data.map((record) => {
             const item = record.itemRef;
+            if (!item) return null;
             const isLowStock = record.currentStock <= record.reorderLevel;
 
             return (
@@ -53,8 +55,8 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-xs space-y-1">
-                    {item.specifications.gsm && <div>GSM: <span className="font-medium text-gray-900 dark:text-gray-100">{item.specifications.gsm}</span></div>}
-                    {item.specifications.dimensions && <div>Size: <span className="font-medium text-gray-900 dark:text-gray-100">{item.specifications.dimensions}</span></div>}
+                    {item?.specifications?.gsm && <div>GSM: <span className="font-medium text-gray-900 dark:text-gray-100">{item.specifications.gsm}</span></div>}
+                    {item?.specifications?.dimensions && <div>Size: <span className="font-medium text-gray-900 dark:text-gray-100">{item.specifications.dimensions}</span></div>}
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -91,6 +93,17 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock }: StockT
                       className="text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       + Stock
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Delete "${item.itemName}"? This will also remove all stock transactions.`)) {
+                          onDelete(record._id);
+                        }
+                      }}
+                      className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Item"
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </td>

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getInventoryByCategory, getInventoryCategories, addStockTransaction, getLedger, createNewItem } from '../../../services/api/inventory';
+import { getInventoryByCategory, getInventoryCategories, addStockTransaction, getLedger, createNewItem, deleteInventoryItem } from '../../../services/api/inventory';
 import type { StockTransaction } from '../types';
 
 export function useInventoryCategories() {
@@ -39,6 +39,16 @@ export function useCreateItem() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: any) => createNewItem(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    },
+  });
+}
+
+export function useDeleteInventoryItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteInventoryItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },

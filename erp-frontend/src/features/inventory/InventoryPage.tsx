@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AlertCircle, Plus } from 'lucide-react';
-import { useInventoryCategories, useInventory, useAddStockTransaction, useLedger, useCreateItem } from './hooks/useInventory';
+import { useInventoryCategories, useInventory, useAddStockTransaction, useLedger, useCreateItem, useDeleteInventoryItem } from './hooks/useInventory';
 import { StockTable } from './components/StockTable';
 import { AddStockForm } from './components/AddStockForm';
 import { StockLedger } from './components/StockLedger';
@@ -14,6 +14,7 @@ export function InventoryPage() {
   const { data: inventoryData, isLoading: isInventoryLoading } = useInventory(activeCategory);
   const addStockMutation = useAddStockTransaction();
   const createItemMutation = useCreateItem();
+  const deleteItemMutation = useDeleteInventoryItem();
 
   // SlideOver State
   const [slideOverOpen, setSlideOverOpen] = useState(false);
@@ -109,6 +110,7 @@ export function InventoryPage() {
             isLoading={isInventoryLoading} 
             onAddStock={handleAddStock}
             onViewLedger={handleViewLedger}
+            onDelete={(id) => deleteItemMutation.mutate(id)}
           />
         </div>
       </div>

@@ -1,80 +1,46 @@
-import { mockInventory, mockTransactions, STOCK_CATEGORIES } from '../../mocks/inventory';
+import { api } from './client';
 import type { InventoryRecord, StockTransaction } from '../../features/inventory/types';
-// import { api } from './client'; // Uncomment when backend is ready
 
 export async function getInventoryCategories(): Promise<{ data: string[] }> {
-  return Promise.resolve({ data: STOCK_CATEGORIES });
+  try {
+    const res = await api.get('/inventory/categories');
+    return { data: res.data.data };
+  } catch (error) {
+    console.error("Error fetching categories", error);
+    return { data: [] };
+  }
 }
 
 export async function getInventoryByCategory(category: string): Promise<{ data: InventoryRecord[] }> {
-  // return api.get(`/inventory?category=${encodeURIComponent(category)}`);
-  
-  // Mock implementation
-  const filtered = category === 'All' 
-    ? mockInventory 
-    : mockInventory.filter(item => item.itemRef.category === category);
-  
-  return Promise.resolve({ data: filtered });
+  try {
+    const res = await api.get(`/inventory?category=${encodeURIComponent(category)}`);
+    return { data: res.data.data };
+  } catch (error) {
+    console.error("Error fetching inventory", error);
+    return { data: [] };
+  }
 }
 
 export async function addStockTransaction(data: Omit<StockTransaction, '_id' | 'date'>): Promise<{ data: StockTransaction }> {
-  // return api.post('/inventory', data);
-  
-  // Mock implementation
-  const newTxn: StockTransaction = {
-    ...data,
-    _id: `txn-${Math.random().toString(36).substr(2, 9)}`,
-    date: new Date().toISOString()
-  };
-  
-  // Update mock inventory stock
-  const invItem = mockInventory.find(i => i._id === data.inventoryRef);
-  if (invItem) {
-    if (data.type === 'IN') {
-      invItem.currentStock += data.quantity;
-      invItem.lastRestockedDate = newTxn.date;
-    } else {
-      invItem.currentStock -= data.quantity;
-    }
-  }
-  
-  mockTransactions.unshift(newTxn);
-  return Promise.resolve({ data: newTxn });
+  const res = await api.post('/inventory/transactions', data);
+  return { data: res.data.data };
 }
 
 export async function getLedger(inventoryId: string): Promise<{ data: StockTransaction[] }> {
-  // return api.get(`/inventory/ledger/${inventoryId}`);
-  
-  // Mock implementation
-  const filtered = mockTransactions.filter(t => t.inventoryRef === inventoryId);
-  return Promise.resolve({ data: filtered });
+  try {
+    const res = await api.get(`/inventory/ledger/${inventoryId}`);
+    return { data: res.data.data };
+  } catch (error) {
+    console.error("Error fetching ledger", error);
+    return { data: [] };
+  }
 }
 
 export async function createNewItem(data: any): Promise<{ data: InventoryRecord }> {
-  // return api.post(`/items`, itemData) followed by api.post(`/inventory`, inventoryData)
-  
-  // Mock implementation
-  const newItemRef = {
-    _id: `itm-${Math.random().toString(36).substr(2, 9)}`,
-    itemCode: data.itemCode,
-    itemName: data.itemName,
-    type: data.type,
-    category: data.category,
-    specifications: data.specifications,
-    unitOfMeasure: data.unitOfMeasure
-  };
+  const res = await api.post('/inventory/items', data);
+  return { data: res.data.data };
+}
 
-  const newInventoryRecord: InventoryRecord = {
-    _id: `inv-${Math.random().toString(36).substr(2, 9)}`,
-    itemRef: newItemRef,
-    warehouseLocation: data.warehouseLocation || 'Unassigned',
-    currentStock: Number(data.initialStock),
-    reservedStock: 0,
-    reorderLevel: Number(data.reorderLevel),
-    lastRestockedDate: new Date().toISOString(),
-    batchNumber: 'INITIAL-STOCK'
-  };
-
-  mockInventory.push(newInventoryRecord);
-  return Promise.resolve({ data: newInventoryRecord });
+export async function deleteInventoryItem(id: string): Promise<void> {
+  await api.delete(`/inventory/${id}`);
 }
