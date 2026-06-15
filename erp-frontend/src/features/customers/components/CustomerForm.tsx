@@ -16,6 +16,7 @@ const schema = z.object({
   billingAddress: z.string().optional(),
   shippingAddress: z.string().optional(),
   creditLimit: z.any().transform(v => Number(v) || 0).refine(val => val >= 0, 'Credit limit cannot be negative').optional(),
+  outstandingBalance: z.any().transform(v => Number(v) || 0).refine(val => val >= 0, 'Outstanding cannot be negative').optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -51,6 +52,7 @@ export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'cr
       billingAddress: '',
       shippingAddress: '',
       creditLimit: 0,
+      outstandingBalance: 0,
       ...defaultValues,
     },
   });
@@ -102,9 +104,14 @@ export function CustomerForm({ onSubmit, isSubmitting, defaultValues, mode = 'cr
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Financial</p>
-        <FormField label="Credit Limit (₹)" error={errors.creditLimit?.message}>
-          <input {...register('creditLimit')} type="number" placeholder="0" className={inputClass} min={0} />
-        </FormField>
+        <div className="space-y-3">
+          <FormField label="Credit Limit (₹)" error={errors.creditLimit?.message}>
+            <input {...register('creditLimit')} type="number" placeholder="0" className={inputClass} min={0} />
+          </FormField>
+          <FormField label="Outstanding Balance (₹)" error={errors.outstandingBalance?.message}>
+            <input {...register('outstandingBalance')} type="number" placeholder="0" className={inputClass} min={0} />
+          </FormField>
+        </div>
       </div>
 
       <div className="pt-2 border-t border-gray-100 dark:border-neutral-800">
