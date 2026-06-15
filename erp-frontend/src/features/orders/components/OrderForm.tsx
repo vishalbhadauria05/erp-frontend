@@ -116,12 +116,11 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
 
   const onValidSubmit = (values: FormValues) => {
     const backendData = { ...values } as Partial<FormValues>;
-    delete backendData.boxesPerSheet;
+    // Keep boxesPerSheet and numberOf2Ply — backend needs them for inventory deduction
     delete backendData.duplexLength;
     delete backendData.duplexBreadth;
     delete backendData.duplexGsm;
     delete backendData.duplexRate;
-    delete backendData.numberOf2Ply;
     delete backendData.twoPlyGsm;
     delete backendData.twoPlyRate;
     delete backendData.spotUvSize;
