@@ -21,4 +21,5 @@ export interface CustomerFormData {
   billingAddress: string;
   shippingAddress: string;
   creditLimit: number;
+  outstandingBalance: number;
 }
