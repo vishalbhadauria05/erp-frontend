@@ -26,3 +26,8 @@ export async function updateOrder(id: string, data: Partial<OrderFormData>): Pro
 export async function deleteOrder(id: string): Promise<void> {
   await api.delete(`${ENDPOINT}/${id}`);
 }
+
+export async function updateOrderStatus(id: string, status: string): Promise<{ data: Order }> {
+  const response = await api.patch(`${ENDPOINT}/${id}/status`, { status });
+  return response.data;
+}

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getOrders, createOrder, updateOrder, deleteOrder } from '../../../services/api/orders';
+import { getOrders, createOrder, updateOrder, deleteOrder, updateOrderStatus } from '../../../services/api/orders';
 import type { OrderFormData } from '../types';
 
 export function useOrders() {
@@ -15,6 +15,7 @@ export function useCreateOrder() {
     mutationFn: (data: OrderFormData) => createOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }
@@ -38,3 +39,15 @@ export function useDeleteOrder() {
     },
   });
 }
+
+export function useUpdateOrderStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => updateOrderStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
