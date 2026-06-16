@@ -115,31 +115,10 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   });
 
   const onValidSubmit = (values: FormValues) => {
-    const backendData = { ...values } as Partial<FormValues>;
-    // Keep boxesPerSheet and numberOf2Ply — backend needs them for inventory deduction
-    delete backendData.duplexLength;
-    delete backendData.duplexBreadth;
-    delete backendData.duplexGsm;
-    delete backendData.duplexRate;
-    delete backendData.twoPlyGsm;
-    delete backendData.twoPlyRate;
-    delete backendData.spotUvSize;
-    delete backendData.spotUvCost;
-    delete backendData.spotUvSheets;
-    delete backendData.lamRollSize;
-    delete backendData.lamSheetLength;
-    delete backendData.lamType;
-    delete backendData.fevicolCostPerSheet;
-    delete backendData.lamCostPerSheet;
-    delete backendData.sheeterRate;
-    delete backendData.pastingRate;
-    delete backendData.dieRate;
-    delete backendData.stitchingRate;
-    delete backendData.strappingRate;
-    delete backendData.printingCost;
-    
-    onSubmit(backendData as unknown as OrderFormData);
-  };
+  console.log("Submitting Order:", values);
+
+  onSubmit(values as unknown as OrderFormData);
+};
 
   const parseNum = (val: string | undefined) => parseFloat(val || '0');
   

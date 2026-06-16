@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { Order, OrderFormData } from '../../features/orders/types';
+import { api } from "./client";
+import type { Order, OrderFormData } from "../../features/orders/types";
 
 const ENDPOINT = "/orders";
 
@@ -13,21 +13,36 @@ export async function getOrders(): Promise<{ data: Order[] }> {
   }
 }
 
-export async function createOrder(data: OrderFormData): Promise<{ data: Order }> {
+export async function createOrder(
+  data: OrderFormData
+): Promise<{ data: Order }> {
   const response = await api.post(ENDPOINT, data);
   return response.data;
 }
 
-export async function updateOrder(id: string, data: Partial<OrderFormData>): Promise<{ data: Order }> {
+export async function updateOrder(
+  id: string,
+  data: Partial<OrderFormData>
+): Promise<{ data: Order }> {
   const response = await api.put(`${ENDPOINT}/${id}`, data);
+  return response.data;
+}
+
+// ✅ ADD THIS FUNCTION
+export async function updateOrderStatus(
+  id: string,
+  status: string
+): Promise<any> {
+  const response = await api.patch(
+    `${ENDPOINT}/${id}/status`,
+    {
+      status,
+    }
+  );
+
   return response.data;
 }
 
 export async function deleteOrder(id: string): Promise<void> {
   await api.delete(`${ENDPOINT}/${id}`);
-}
-
-export async function updateOrderStatus(id: string, status: string): Promise<{ data: Order }> {
-  const response = await api.patch(`${ENDPOINT}/${id}/status`, { status });
-  return response.data;
 }
