@@ -1,5 +1,6 @@
 import { useState } from 'react'; // HMR trigger
-import { Plus, Users, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Users, Search, Pencil, Trash2, Download } from 'lucide-react';
+import { exportToExcel } from '../../utils/exportToExcel';
 import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from './hooks/useCustomers';
 import { CustomerForm } from './components/CustomerForm';
 import { SlideOver } from '../../components/ui/SlideOver';
@@ -75,6 +76,20 @@ export function CustomersPage() {
 
   const isSubmitting = isCreating || isUpdating;
 
+  const handleExport = () => {
+    const exportData = allCustomers.map((c) => ({
+      'Company Name': c.companyName,
+      'Contact Person': c.contactPerson || '',
+      'Email': c.email || '',
+      'Phone': c.phone || '',
+      'GSTIN': c.gstNumber || '',
+      'Address': c.address || '',
+      'Credit Limit': c.creditLimit || 0,
+      'Outstanding': c.outstandingBalance || 0,
+    }));
+    exportToExcel(exportData, `Customers_${new Date().toISOString().slice(0,10)}`, 'Customers');
+  };
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -82,13 +97,22 @@ export function CustomersPage() {
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Customers</h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{allCustomers.length} registered parties</p>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={16} />
-          Add Customer
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={16} />
+            Add Customer
+          </button>
+        </div>
       </div>
 
       <div className="mb-4">

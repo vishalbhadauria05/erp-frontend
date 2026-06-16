@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, Search, FileText, Package, CheckCircle2, Truck } from 'lucide-react';
+import { Plus, Search, FileText, Package, CheckCircle2, Truck, Download } from 'lucide-react';
+import { exportToExcel } from '../../utils/exportToExcel';
 import { useOrders, useCreateOrder, useUpdateOrderStatus, useUpdateDelivery } from './hooks/useOrders';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { OrderForm } from './components/OrderForm';
@@ -75,6 +76,21 @@ export function OrdersPage() {
     setDeliveryInput(String(order.quantityDelivered || 0));
   };
 
+  const handleExport = () => {
+    const exportData = orders.map((o) => ({
+      'Order #': o.orderNumber,
+      'Customer': o.customerName,
+      'Item': o.itemName,
+      'Box Type': o.boxType,
+      'Ordered': o.quantityOrdered,
+      'Delivered': o.quantityDelivered || 0,
+      'Remaining': o.quantityRemaining ?? (o.quantityOrdered - (o.quantityDelivered || 0)),
+      'Status': o.status || 'Pending',
+      'Created': o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
+    }));
+    exportToExcel(exportData, `Orders_${new Date().toISOString().slice(0,10)}`, 'Orders');
+  };
+
   const handleUpdateDelivery = () => {
     if (!deliveryModal) return;
     const qty = Number(deliveryInput);
@@ -104,13 +120,22 @@ export function OrdersPage() {
             {statusCounts['Completed'] ? ` · ${statusCounts['Completed']} completed` : ''}
           </p>
         </div>
-        <button
-          onClick={() => setIsSlideOverOpen(true)}
-          className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
-        >
-          <Plus size={18} />
-          New Order
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 border border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Download size={18} />
+            Export
+          </button>
+          <button
+            onClick={() => setIsSlideOverOpen(true)}
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
+          >
+            <Plus size={18} />
+            New Order
+          </button>
+        </div>
       </div>
 
       {/* Card with tabs + table */}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertCircle, Plus } from 'lucide-react';
+import { AlertCircle, Plus, Download } from 'lucide-react';
+import { exportToExcel } from '../../utils/exportToExcel';
 import { useInventoryCategories, useInventory, useAddStockTransaction, useLedger, useCreateItem, useDeleteInventoryItem } from './hooks/useInventory';
 import { StockTable } from './components/StockTable';
 import { AddStockForm } from './components/AddStockForm';
@@ -69,6 +70,25 @@ export function InventoryPage() {
               <span className="text-sm font-medium">{lowStockCount} items low on stock</span>
             </div>
           )}
+          <button
+            onClick={() => {
+              const exportData = (inventoryData?.data || []).map((r: any) => ({
+                'Item Name': r.itemRef?.name || r.name || '',
+                'Category': r.itemRef?.category || r.category || '',
+                'GSM': r.itemRef?.specifications?.gsm || '',
+                'Dimensions': r.itemRef?.specifications?.dimensions || '',
+                'Current Stock': r.currentStock || 0,
+                'Reorder Level': r.reorderLevel || 0,
+                'Unit': r.unit || '',
+                'Warehouse': r.warehouse || '',
+              }));
+              exportToExcel(exportData, `Inventory_${new Date().toISOString().slice(0,10)}`, 'Inventory');
+            }}
+            className="flex items-center gap-2 border border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Download size={18} />
+            Export
+          </button>
           <button
             onClick={handleCreateNewItem}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors"
