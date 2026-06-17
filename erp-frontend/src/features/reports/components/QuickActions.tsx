@@ -1,4 +1,4 @@
-import { Plus, Users, PackagePlus, FileText } from 'lucide-react';
+import { Plus, Users, PackagePlus, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const actions = [
@@ -28,9 +28,9 @@ const actions = [
   },
   {
     name: 'New Job Work',
-    description: 'Send materials for external processing',
-    href: '/job-work',
-    icon: FileText,
+    description: 'Create a printing or spot UV job',
+    href: '/jobwork',
+    icon: Printer,
     iconColor: 'text-amber-700',
     iconBg: 'bg-amber-100',
   },

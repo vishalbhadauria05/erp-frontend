@@ -5,6 +5,7 @@ import { DashboardPage } from "./features/reports/DashboardPage";
 import { OrdersPage } from "./features/orders/OrdersPage";
 import { CustomersPage } from "./features/customers/CustomersPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
+import { JobWorkPage } from "./features/jobwork/JobWorkPage";
 import { LoginPage } from "./features/auth/LoginPage";
 import { useAuth } from "./features/auth/auth";
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/jobwork" element={<JobWorkPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Route>

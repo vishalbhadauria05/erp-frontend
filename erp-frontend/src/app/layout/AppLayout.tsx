@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Users, Package, Box, ChevronRight, LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Package, Box, ChevronRight, LogOut, Menu, Moon, Sun, Printer } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../../features/auth/auth';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/inventory', label: 'Inventory', icon: Package },
+  { to: '/jobwork', label: 'Job Work', icon: Printer },
 ];
 
 const routeNames: Record<string, string> = {
@@ -16,6 +17,7 @@ const routeNames: Record<string, string> = {
   '/orders': 'Orders',
   '/customers': 'Customers',
   '/inventory': 'Inventory',
+  '/jobwork': 'Job Work',
 };
 
 export function AppLayout() {
