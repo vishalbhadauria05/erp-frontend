@@ -3,7 +3,8 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { DispatchFormData } from '../types';
-import { Truck, Plus, Trash2 } from 'lucide-react';
+import { Truck, Plus, Trash2, PackageMinus } from 'lucide-react';
+import { useInventory } from '../../inventory/hooks/useInventory';
 
 const dispatchItemSchema = z.object({
   id: z.string(),
@@ -19,6 +20,8 @@ const schema = z.object({
   customerAddress: z.string().min(5, 'Customer address is required'),
   senderName: z.string().min(1, 'Sender name is required'),
   items: z.array(dispatchItemSchema).min(1, 'At least one item is required'),
+  consumedMaterialId: z.string().optional(),
+  consumedWeight: z.number().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -42,6 +45,10 @@ function FormField({ label, error, children }: { label: string; error?: string; 
 const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-neutral-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-inner';
 
 export function DispatchForm({ onSubmit, isSubmitting, defaultValues }: DispatchFormProps) {
+  const { data: inventoryData } = useInventory('All');
+  const inventoryItems = inventoryData?.data || [];
+  const printedMaterials = inventoryItems.filter((i: any) => i.itemRef?.type === 'Printed Duplex' || i.itemRef?.category?.toLowerCase() === 'printed duplex');
+
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -144,6 +151,28 @@ export function DispatchForm({ onSubmit, isSubmitting, defaultValues }: Dispatch
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className={sectionClass}>
+        <h3 className={sectionTitleClass}>
+          <PackageMinus className="w-4 h-4 mr-2 text-orange-500" /> Material Consumption (Optional)
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Select the Printed Duplex stock consumed for manufacturing these dispatched boxes. This will deduct the stock from Inventory.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Consumed Printed Material" error={errors.consumedMaterialId?.message}>
+            <select {...register('consumedMaterialId')} className={inputClass}>
+              <option value="">-- No deduction --</option>
+              {printedMaterials.map((m: any) => (
+                <option key={m._id} value={m._id}>{m.itemRef?.itemName || m.itemRef?.name} (Stock: {m.currentStock})</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Consumed Weight (kg)" error={errors.consumedWeight?.message}>
+            <input type="number" step="0.1" {...register('consumedWeight', { valueAsNumber: true })} placeholder="Auto-calculated or Manual" className={inputClass} />
+          </FormField>
         </div>
       </div>
 

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useDispatchRecords, useCreateDispatch, useUpdateDispatchStatus } from './hooks/useDispatch';
 import { DispatchForm } from './components/DispatchForm';
+import { PrintableChallan } from './components/PrintableChallan';
 import { SlideOver } from '../../components/ui/SlideOver';
-import { Search, Plus, Truck } from 'lucide-react';
+import { Search, Plus, Truck, Download } from 'lucide-react';
+import { exportToExcel } from '../../utils/exportToExcel';
 import type { DispatchFormData } from './types';
 
 const statusColors: Record<string, string> = {
@@ -14,6 +16,7 @@ const statusColors: Record<string, string> = {
 export function DispatchPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedForPrint, setSelectedForPrint] = useState<any>(null);
 
   const { data: response, isLoading } = useDispatchRecords();
   const createDispatch = useCreateDispatch();
@@ -27,14 +30,35 @@ export function DispatchPage() {
     });
   };
 
+  const handlePrint = (dispatchData: any) => {
+    setSelectedForPrint(dispatchData);
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
   const dispatches = response?.data || [];
   const filteredDispatches = dispatches.filter(d => 
     d.dispatchNo.toLowerCase().includes(searchQuery.toLowerCase()) || 
     d.customerName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleExport = () => {
+    const exportData = filteredDispatches.map(d => ({
+      'Challan No': d.dispatchNo,
+      'Date': d.dispatchDate,
+      'Customer Name': d.customerName,
+      'Customer Address': d.customerAddress,
+      'Items Count': d.items.length,
+      'Status': d.status
+    }));
+    exportToExcel(exportData, `Dispatch_Records_${new Date().toISOString().slice(0, 10)}`, 'Dispatches');
+  };
+
   return (
     <div className="space-y-6">
+      <PrintableChallan dispatchData={selectedForPrint} />
+      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -43,12 +67,21 @@ export function DispatchPage() {
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage outbound shipments and delivery challans</p>
         </div>
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4 mr-2" /> New Dispatch
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 border border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Download size={18} />
+            Export
+          </button>
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4 mr-2" /> New Dispatch
+          </button>
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -111,7 +144,13 @@ export function DispatchPage() {
                         {dispatch.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                      <button
+                        onClick={() => handlePrint(dispatch)}
+                        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                      >
+                        Print Challan
+                      </button>
                       {dispatch.status === 'Pending' && (
                         <button
                           onClick={() => updateStatus.mutate({ id: dispatch._id, status: 'Dispatched' })}
