@@ -1,7 +1,7 @@
 import type { DispatchFormData } from '../types';
 
 interface PrintableChallanProps {
-  dispatchData: any; // We will pass the full record here
+  dispatchData: any;
 }
 
 export function PrintableChallan({ dispatchData }: PrintableChallanProps) {

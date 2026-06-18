@@ -21,7 +21,23 @@ const schema = z.object({
   senderName: z.string().min(1, 'Sender name is required'),
   items: z.array(dispatchItemSchema).min(1, 'At least one item is required'),
   consumedMaterialId: z.string().optional(),
-  consumedWeight: z.number().optional(),
+  consumedWeight: z.number().min(0, 'Weight must be 0 or greater').optional(),
+}).refine((data) => {
+  if (data.consumedMaterialId && data.consumedMaterialId.trim() !== '') {
+    return data.consumedWeight !== undefined && data.consumedWeight > 0;
+  }
+  return true;
+}, {
+  message: "Weight must be greater than 0 if a material is selected",
+  path: ["consumedWeight"],
+}).refine((data) => {
+  if (data.consumedWeight !== undefined && data.consumedWeight > 0) {
+    return data.consumedMaterialId && data.consumedMaterialId.trim() !== '';
+  }
+  return true;
+}, {
+  message: "Please select a material to deduct from",
+  path: ["consumedMaterialId"],
 });
 
 type FormValues = z.infer<typeof schema>;
