@@ -8,7 +8,7 @@ export function PrintableChallan({ dispatchData }: PrintableChallanProps) {
   if (!dispatchData) return null;
 
   return (
-    <div id="print-area" className="hidden print:block bg-white text-black p-12 max-w-4xl mx-auto">
+    <div id="print-area" className="hidden print:block bg-white text-black p-12 w-full">
       <div className="border-2 border-gray-800 p-6 rounded-lg">
         {/* Header */}
         <div className="text-center border-b-2 border-gray-800 pb-4 mb-6">
