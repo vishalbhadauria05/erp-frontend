@@ -84,7 +84,7 @@ export function OrdersPage() {
       'Box Type': o.boxType,
       'Ordered': o.quantityOrdered,
       'Delivered': o.quantityDelivered || 0,
-      'Remaining': o.quantityRemaining ?? (o.quantityOrdered - (o.quantityDelivered || 0)),
+      'Remaining': o.quantityRemaining ?? (Number(o.quantityOrdered) - (o.quantityDelivered || 0)),
       'Status': o.status || 'Pending',
       'Created': o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
     }));
@@ -232,7 +232,7 @@ export function OrdersPage() {
               ) : (
                 filteredOrders.map((order) => {
                   const isCompleted = order.status === 'Completed' || order.status === 'Dispatched' || order.status === 'Cancelled';
-                  const qtyOrdered = order.quantityOrdered || 0;
+                  const qtyOrdered = Number(order.quantityOrdered) || 0;
                   const qtyDelivered = order.quantityDelivered || 0;
                   const qtyRemaining = order.quantityRemaining ?? Math.max(0, qtyOrdered - qtyDelivered);
                   const deliveryPercent = qtyOrdered > 0 ? Math.round((qtyDelivered / qtyOrdered) * 100) : 0;

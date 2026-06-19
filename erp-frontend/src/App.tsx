@@ -6,6 +6,7 @@ import { OrdersPage } from "./features/orders/OrdersPage";
 import { CustomersPage } from "./features/customers/CustomersPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
 import { JobWorkPage } from "./features/jobwork/JobWorkPage";
+import { DispatchPage } from "./features/dispatch/DispatchPage";
 import { LoginPage } from "./features/auth/LoginPage";
 import { useAuth } from "./features/auth/auth";
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/jobwork" element={<JobWorkPage />} />
+          <Route path="/dispatch" element={<DispatchPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Route>

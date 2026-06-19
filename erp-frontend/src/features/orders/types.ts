@@ -45,4 +45,6 @@ export interface Order extends OrderFormData {
   status?: string;
   createdAt?: string;
   totalCost?: number;
+  quantityDelivered?: number;
+  quantityRemaining?: number;
 }

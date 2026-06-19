@@ -41,7 +41,7 @@ export function JobWorkPage() {
   // Get selected inventory's current stock
   const selectedInvItem = inventoryItems.find((i: any) => i._id === selectedInventory);
   const availableStock = selectedInvItem?.currentStock || 0;
-  const materialName = selectedInvItem?.itemRef?.itemName || selectedInvItem?.itemRef?.name || '';
+  const materialName = selectedInvItem?.itemRef?.itemName || '';
 
   const resetForm = () => {
     setJobNumber('');
@@ -313,7 +313,7 @@ export function JobWorkPage() {
             >
               <option value="">— Select from inventory —</option>
               {inventoryItems.map((item: any) => {
-                const name = item.itemRef?.itemName || item.itemRef?.name || 'Unknown';
+                const name = item.itemRef?.itemName || 'Unknown';
                 const category = item.itemRef?.category || '';
                 return (
                   <option key={item._id} value={item._id}>
