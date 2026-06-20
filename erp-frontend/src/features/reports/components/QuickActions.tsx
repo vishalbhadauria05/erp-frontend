@@ -1,4 +1,4 @@
-import { Plus, Users, PackagePlus, Printer } from 'lucide-react';
+import { Plus, Users, PackagePlus, Printer, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const actions = [
@@ -33,6 +33,14 @@ const actions = [
     icon: Printer,
     iconColor: 'text-amber-700',
     iconBg: 'bg-amber-100',
+  },
+  {
+    name: 'Dispatch Orders',
+    description: 'Manage and dispatch completed orders',
+    href: '/dispatch',
+    icon: Truck,
+    iconColor: 'text-violet-700',
+    iconBg: 'bg-violet-100',
   },
 ];
 
