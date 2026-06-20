@@ -16,11 +16,13 @@ interface AddStockFormProps {
   inventoryId: string;
   itemName: string;
   unit: string;
+  gsm?: number;
+  dimensions?: string;
   onSubmit: (data: Omit<StockTransaction, '_id' | 'date'>) => void;
   isSubmitting: boolean;
 }
 
-export function AddStockForm({ inventoryId, itemName, unit, onSubmit, isSubmitting }: AddStockFormProps) {
+export function AddStockForm({ inventoryId, itemName, unit, gsm, dimensions, onSubmit, isSubmitting }: AddStockFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -48,6 +50,20 @@ export function AddStockForm({ inventoryId, itemName, unit, onSubmit, isSubmitti
       <div className="bg-gray-50 dark:bg-black rounded-lg p-4 border border-gray-100 dark:border-neutral-800 mb-6">
         <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider mb-1">Selected Item</p>
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{itemName}</p>
+        {(gsm || dimensions) && (
+          <div className="flex items-center gap-3 mt-2">
+            {gsm ? (
+              <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                GSM: {gsm}
+              </span>
+            ) : null}
+            {dimensions ? (
+              <span className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                Size: {dimensions}
+              </span>
+            ) : null}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
