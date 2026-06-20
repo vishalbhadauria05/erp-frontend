@@ -149,6 +149,8 @@ export function InventoryPage() {
             inventoryId={selectedRecord._id}
             itemName={selectedRecord.itemRef.itemName}
             unit={selectedRecord.itemRef.unitOfMeasure}
+            gsm={selectedRecord.itemRef.specifications?.gsm}
+            dimensions={selectedRecord.itemRef.specifications?.dimensions}
             isSubmitting={addStockMutation.isPending}
             onSubmit={(data) => {
               addStockMutation.mutate(data, {
