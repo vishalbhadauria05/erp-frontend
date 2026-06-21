@@ -1,10 +1,18 @@
 import { useState } from 'react';
-import { Plus, Search, FileText, Package, CheckCircle2, Truck, Download } from 'lucide-react';
+import { Plus, Search, FileText, Package, CheckCircle2, Truck, Download, Printer, Send, AlertTriangle } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportToExcel';
-import { useOrders, useCreateOrder, useUpdateOrderStatus, useUpdateDelivery } from './hooks/useOrders';
+import {
+  useOrders,
+  useCreateOrder,
+  useUpdateOrderStatus,
+  useUpdateDelivery,
+  useCreateOrderJobWork,
+  useCreateOrderDispatch,
+} from './hooks/useOrders';
+import { useInventory } from '../inventory/hooks/useInventory';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { OrderForm } from './components/OrderForm';
-import type { OrderFormData } from './types';
+import type { Order, OrderFormData } from './types';
 
 const statusColors: Record<string, string> = {
   Pending: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400',
@@ -17,19 +25,39 @@ const statusColors: Record<string, string> = {
 
 const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'In Production', 'Completed', 'Dispatched', 'Cancelled'];
 
+type JobModalState = {
+  order: Order;
+  inventoryId: string;
+  quantity: string;
+  error: string;
+};
+
+type DispatchModalState = {
+  order: Order;
+  customerAddress: string;
+  quantity: string;
+  error: string;
+};
+
 export function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeStatus, setActiveStatus] = useState('All');
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   const [deliveryModal, setDeliveryModal] = useState<{ orderId: string; orderNumber: string; qtyOrdered: number; qtyDelivered: number } | null>(null);
   const [deliveryInput, setDeliveryInput] = useState('');
+  const [jobModal, setJobModal] = useState<JobModalState | null>(null);
+  const [dispatchModal, setDispatchModal] = useState<DispatchModalState | null>(null);
 
   const { data: ordersData, isLoading, isError } = useOrders();
+  const { data: inventoryData } = useInventory('All');
   const createOrderMutation = useCreateOrder();
   const updateStatusMutation = useUpdateOrderStatus();
   const updateDeliveryMutation = useUpdateDelivery();
+  const createOrderJobMutation = useCreateOrderJobWork();
+  const createOrderDispatchMutation = useCreateOrderDispatch();
 
   const orders = ordersData?.data || [];
+  const inventoryItems = inventoryData?.data || [];
 
   // Count orders per status for tab badges
   const statusCounts: Record<string, number> = {};
@@ -49,6 +77,14 @@ export function OrdersPage() {
     order.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.itemName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getOrderJobType = (order: Order) => order.laminated ? 'Printed+Laminated' : 'Printed';
+
+  const getOrderReadyForDispatch = (order: Order) => {
+    if (order.dispatchRef || order.status === 'Dispatched' || order.status === 'Cancelled') return false;
+    if (!order.printed) return true;
+    return order.productionStage === 'Printed' || order.productionStage === 'Printed & Laminated';
+  };
 
   const handleCreateOrder = (data: OrderFormData) => {
     createOrderMutation.mutate(data, {
@@ -76,16 +112,39 @@ export function OrdersPage() {
     setDeliveryInput(String(order.quantityDelivered || 0));
   };
 
+  const openJobModal = (order: Order) => {
+    setJobModal({
+      order,
+      inventoryId: '',
+      quantity: String(order.quantityOrdered || ''),
+      error: '',
+    });
+  };
+
+  const openDispatchModal = (order: Order) => {
+    const qtyOrdered = Number(order.quantityOrdered) || 0;
+    const qtyDelivered = order.quantityDelivered || 0;
+    const remaining = Math.max(0, qtyOrdered - qtyDelivered);
+    setDispatchModal({
+      order,
+      customerAddress: '',
+      quantity: String(remaining || qtyOrdered || ''),
+      error: '',
+    });
+  };
+
   const handleExport = () => {
     const exportData = orders.map((o) => ({
       'Order #': o.orderNumber,
       'Customer': o.customerName,
+      'Brand': o.itemBrand || '',
       'Item': o.itemName,
       'Box Type': o.boxType,
       'Ordered': o.quantityOrdered,
       'Delivered': o.quantityDelivered || 0,
       'Remaining': o.quantityRemaining ?? (Number(o.quantityOrdered) - (o.quantityDelivered || 0)),
       'Status': o.status || 'Pending',
+      'Production': o.productionStage || 'Not Started',
       'Created': o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
     }));
     exportToExcel(exportData, `Orders_${new Date().toISOString().slice(0,10)}`, 'Orders');
@@ -105,6 +164,89 @@ export function OrdersPage() {
     updateDeliveryMutation.mutate(
       { id: deliveryModal.orderId, quantityDelivered: qty },
       { onSuccess: () => setDeliveryModal(null) }
+    );
+  };
+
+  const handleCreateJobFromOrder = () => {
+    if (!jobModal) return;
+    const qty = Number(jobModal.quantity);
+    const selectedInventory = inventoryItems.find((item: any) => item._id === jobModal.inventoryId);
+    const availableStock = selectedInventory?.currentStock || 0;
+
+    if (!jobModal.inventoryId) {
+      setJobModal({ ...jobModal, error: 'Please select source inventory material.' });
+      return;
+    }
+    if (isNaN(qty) || qty <= 0) {
+      setJobModal({ ...jobModal, error: 'Quantity must be a positive number.' });
+      return;
+    }
+    if (qty > availableStock) {
+      setJobModal({ ...jobModal, error: `Insufficient stock. Available: ${availableStock}, Requested: ${qty}.` });
+      return;
+    }
+
+    createOrderJobMutation.mutate(
+      {
+        id: jobModal.order._id,
+        data: {
+          inventoryRef: jobModal.inventoryId,
+          quantity: qty,
+          jobNumber: `JOB-${jobModal.order.orderNumber}`,
+        },
+      },
+      {
+        onSuccess: () => setJobModal(null),
+        onError: (error: any) => {
+          setJobModal({
+            ...jobModal,
+            error: error?.response?.data?.message || 'Failed to send order to job work.',
+          });
+        },
+      }
+    );
+  };
+
+  const handleCreateDispatchFromOrder = () => {
+    if (!dispatchModal) return;
+    const qty = Number(dispatchModal.quantity);
+    const qtyOrdered = Number(dispatchModal.order.quantityOrdered) || 0;
+    const qtyDelivered = dispatchModal.order.quantityDelivered || 0;
+    const qtyRemaining = Math.max(0, qtyOrdered - qtyDelivered);
+    const maxDispatchQty = qtyRemaining > 0 ? qtyRemaining : qtyOrdered;
+
+    if (dispatchModal.customerAddress.trim().length < 5) {
+      setDispatchModal({ ...dispatchModal, error: 'Customer address is required.' });
+      return;
+    }
+    if (isNaN(qty) || qty <= 0) {
+      setDispatchModal({ ...dispatchModal, error: 'Quantity must be a positive number.' });
+      return;
+    }
+    if (qty > maxDispatchQty) {
+      setDispatchModal({ ...dispatchModal, error: `Cannot dispatch more than remaining (${maxDispatchQty}).` });
+      return;
+    }
+
+    createOrderDispatchMutation.mutate(
+      {
+        id: dispatchModal.order._id,
+        data: {
+          customerAddress: dispatchModal.customerAddress.trim(),
+          dispatchDate: new Date().toISOString().slice(0, 10),
+          quantity: qty,
+          senderName: 'Amar Packers',
+        },
+      },
+      {
+        onSuccess: () => setDispatchModal(null),
+        onError: (error: any) => {
+          setDispatchModal({
+            ...dispatchModal,
+            error: error?.response?.data?.message || 'Failed to send order to dispatch.',
+          });
+        },
+      }
     );
   };
 
@@ -299,6 +441,14 @@ export function OrdersPage() {
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status || 'Pending'] || statusColors.Pending}`}>
                           {order.status || 'Pending'}
                         </span>
+                        {order.printed && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">
+                              <Printer size={11} />
+                              {order.productionStage || 'Not Started'}
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Actions */}
@@ -306,6 +456,28 @@ export function OrdersPage() {
                         <div className="flex items-center justify-end gap-2">
                           {!isCompleted && (
                             <>
+                              {order.printed && !order.jobWorkRef && (
+                                <button
+                                  onClick={() => openJobModal(order)}
+                                  disabled={createOrderJobMutation.isPending}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50 transition-colors"
+                                  title="Send to job work"
+                                >
+                                  <Printer size={13} />
+                                  Job
+                                </button>
+                              )}
+                              {getOrderReadyForDispatch(order) && (
+                                <button
+                                  onClick={() => openDispatchModal(order)}
+                                  disabled={createOrderDispatchMutation.isPending}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1.5 text-xs font-medium text-violet-700 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 disabled:opacity-50 transition-colors"
+                                  title="Send to dispatch"
+                                >
+                                  <Send size={13} />
+                                  Dispatch
+                                </button>
+                              )}
                               <button
                                 onClick={() => openDeliveryModal(order)}
                                 className="inline-flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
@@ -400,6 +572,140 @@ export function OrdersPage() {
                 className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60 transition-colors shadow-sm"
               >
                 {updateDeliveryMutation.isPending ? 'Saving...' : 'Update'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {jobModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-neutral-800">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+              Send to Job Work
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              {jobModal.order.orderNumber} will be sent as <span className="font-medium text-amber-600">{getOrderJobType(jobModal.order)}</span>.
+            </p>
+
+            {jobModal.error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                <AlertTriangle size={15} />
+                {jobModal.error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Source Inventory Material
+                </label>
+                <select
+                  value={jobModal.inventoryId}
+                  onChange={(e) => setJobModal({ ...jobModal, inventoryId: e.target.value, error: '' })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select inventory item</option>
+                  {inventoryItems.map((record: any) => (
+                    <option key={record._id} value={record._id}>
+                      {record.itemRef?.itemName || 'Unknown'} ({record.itemRef?.category || 'No category'}) - Stock: {record.currentStock}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Quantity
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={jobModal.quantity}
+                  onChange={(e) => setJobModal({ ...jobModal, quantity: e.target.value, error: '' })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setJobModal(null)}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-neutral-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateJobFromOrder}
+                disabled={createOrderJobMutation.isPending}
+                className="flex-1 rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-60 transition-colors shadow-sm"
+              >
+                {createOrderJobMutation.isPending ? 'Sending...' : 'Send to Job'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dispatchModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-neutral-800">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+              Send to Dispatch
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              Create a dispatch challan for <span className="font-medium text-violet-600">{dispatchModal.order.orderNumber}</span>.
+            </p>
+
+            {dispatchModal.error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                <AlertTriangle size={15} />
+                {dispatchModal.error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Customer Address
+                </label>
+                <textarea
+                  value={dispatchModal.customerAddress}
+                  onChange={(e) => setDispatchModal({ ...dispatchModal, customerAddress: e.target.value, error: '' })}
+                  rows={3}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Delivery address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Dispatch Quantity
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max={Number(dispatchModal.order.quantityOrdered) || undefined}
+                  value={dispatchModal.quantity}
+                  onChange={(e) => setDispatchModal({ ...dispatchModal, quantity: e.target.value, error: '' })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setDispatchModal(null)}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-neutral-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateDispatchFromOrder}
+                disabled={createOrderDispatchMutation.isPending}
+                className="flex-1 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-violet-700 disabled:opacity-60 transition-colors shadow-sm"
+              >
+                {createOrderDispatchMutation.isPending ? 'Creating...' : 'Create Dispatch'}
               </button>
             </div>
           </div>

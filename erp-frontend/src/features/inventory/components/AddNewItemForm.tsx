@@ -5,11 +5,14 @@ import { z } from 'zod';
 import { STOCK_CATEGORIES } from '../../../mocks/inventory';
 import { useInventory } from '../hooks/useInventory';
 import { AlertTriangle } from 'lucide-react';
+import { getItems } from '../../../services/api/items';
+import type { Item } from '../../items/types';
 
 const schema = z.object({
   itemCode: z.string().min(2, 'Item Code is required'),
+  brand: z.string().min(1, 'Brand is required'),
   itemName: z.string().min(2, 'Item Name is required'),
-  type: z.enum(['Duplex', 'Reel', 'PrintedPaper', 'FinishedGood']),
+  type: z.enum(['Duplex', 'Reel', 'PrintedPaper', 'FinishedGood', 'Consumable', 'RawMaterial']),
   category: z.string().min(1, 'Category is required'),
   unitOfMeasure: z.string().min(1, 'Unit is required'),
   specifications: z.object({
@@ -34,14 +37,23 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
     resolver: zodResolver(schema),
     defaultValues: {
       itemCode: '',
+      brand: '',
+      itemName: '',
       type: 'Duplex',
       category: defaultCategory === 'All' ? STOCK_CATEGORIES[0] : defaultCategory,
+      unitOfMeasure: 'KG',
+      specifications: {
+        gsm: '',
+        dimensions: '',
+      },
       initialStock: '0',
       reorderLevel: '0'
     }
   });
 
-  // Reel consumption state (only for Corrugated Rolls)
+  const [items, setItems] = useState<Item[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedMasterItem, setSelectedMasterItem] = useState<Item | null>(null);
   const [kraftReelInventoryId, setKraftReelInventoryId] = useState('');
   const [kraftReelQty, setKraftReelQty] = useState('');
   const [semiKraftReelInventoryId, setSemiKraftReelInventoryId] = useState('');
@@ -53,21 +65,60 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
 
   const isCorrugatedRolls = category === 'Corrugated Rolls';
 
-  // Fetch kraft and semi kraft inventory for dropdowns
   const { data: kraftData } = useInventory(isCorrugatedRolls ? 'Reels Kraft' : '');
   const { data: semiKraftData } = useInventory(isCorrugatedRolls ? 'Reels Semi Kraft' : '');
 
   const kraftItems = kraftData?.data || [];
   const semiKraftItems = semiKraftData?.data || [];
 
-  // Get selected reel stocks
   const selectedKraft = kraftItems.find((i: any) => i._id === kraftReelInventoryId);
   const selectedSemiKraft = semiKraftItems.find((i: any) => i._id === semiKraftReelInventoryId);
 
   useEffect(() => {
+    getItems().then(res => setItems(res.data || [])).catch(() => {});
+  }, []);
+
+  const itemBrands = Array.from(
+    new Set(items.map((item) => item.brand?.trim()).filter((brand): brand is string => Boolean(brand)))
+  ).sort((a, b) => a.localeCompare(b));
+
+  const filteredItems = selectedBrand
+    ? items.filter((item) => item.brand?.trim() === selectedBrand)
+    : [];
+
+  const handleBrandSelect = (brand: string) => {
+    setSelectedBrand(brand);
+    setSelectedMasterItem(null);
+    setValue('brand', brand, { shouldValidate: true });
+    setValue('itemName', '', { shouldValidate: true });
+  };
+
+  const handleItemSelect = (itemId: string) => {
+    const item = items.find((candidate) => candidate._id === itemId);
+    if (!item) {
+      setSelectedMasterItem(null);
+      setValue('itemName', '', { shouldValidate: true });
+      return;
+    }
+
+    const specs = item.itemSpecification || item.specifications || {};
+
+    setSelectedMasterItem(item);
+    setValue('brand', item.brand || selectedBrand, { shouldValidate: true });
+    setValue('itemCode', item.itemCode, { shouldValidate: true });
+    setValue('itemName', item.itemName, { shouldValidate: true });
+    setValue('type', item.type, { shouldValidate: true });
+    setValue('category', item.category, { shouldValidate: true });
+    setValue('unitOfMeasure', item.unitOfMeasure, { shouldValidate: true });
+    setValue('specifications.gsm', specs.gsm ? String(specs.gsm) : '', { shouldValidate: true });
+    setValue('specifications.dimensions', specs.dimensions || '', { shouldValidate: true });
+  };
+
+  useEffect(() => {
+    if (selectedMasterItem) return;
     if (!category) return;
     const initials = category.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
-    
+
     let suffix = '';
     if (gsm && gsm.trim() !== '') {
       suffix = `-${gsm.trim()}`;
@@ -76,11 +127,10 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
     } else {
       suffix = '-XXX';
     }
-    
-    setValue('itemCode', `${initials}${suffix}`, { shouldValidate: true });
-  }, [category, gsm, dimensions, setValue]);
 
-  // Reset reel fields when category changes away from Corrugated Rolls
+    setValue('itemCode', `${initials}${suffix}`, { shouldValidate: true });
+  }, [category, gsm, dimensions, selectedMasterItem, setValue]);
+
   useEffect(() => {
     if (!isCorrugatedRolls) {
       setKraftReelInventoryId('');
@@ -93,7 +143,6 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
   const onValidSubmit = (data: FormValues) => {
     const payload: any = { ...data };
 
-    // Attach reel consumption data if Corrugated Rolls
     if (isCorrugatedRolls) {
       if (kraftReelInventoryId && Number(kraftReelQty) > 0) {
         payload.kraftReelInventoryId = kraftReelInventoryId;
@@ -112,28 +161,60 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
 
   return (
     <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-5 p-1 pb-10">
-      
+
       {/* Basic Info */}
       <div className="space-y-4">
         <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-neutral-800 pb-2">Basic Details</h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item Code (Auto-Generated) *</label>
-            <input 
-              {...register('itemCode')} 
-              readOnly
-              className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-100 dark:bg-neutral-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 font-mono focus:outline-none cursor-not-allowed" 
-            />
-            {errors.itemCode && <p className="mt-1 text-xs text-red-500">{errors.itemCode.message}</p>}
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item Brand *</label>
+            <select
+              value={selectedBrand}
+              onChange={(e) => handleBrandSelect(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">— Select Brand —</option>
+              {itemBrands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+            <input type="hidden" {...register('brand')} />
+            {errors.brand && <p className="mt-1 text-xs text-red-500">{errors.brand.message}</p>}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item Name *</label>
-            <input {...register('itemName')} placeholder="e.g. Duplex Reel 350 GSM" className={inputClass} />
+            <select
+              value={selectedMasterItem?._id ?? ''}
+              onChange={(e) => handleItemSelect(e.target.value)}
+              disabled={!selectedBrand}
+              className={inputClass}
+            >
+              <option value="">
+                {selectedBrand ? '— Select Item —' : '— Select brand first —'}
+              </option>
+              {filteredItems.map((item) => (
+                <option key={item._id} value={item._id}>
+                  {item.itemName} ({item.itemCode})
+                </option>
+              ))}
+            </select>
+            <input type="hidden" {...register('itemName')} />
             {errors.itemName && <p className="mt-1 text-xs text-red-500">{errors.itemName.message}</p>}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item Code (Auto-Generated) *</label>
+            <input
+              {...register('itemCode')}
+              readOnly
+              className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-100 dark:bg-neutral-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 font-mono focus:outline-none cursor-not-allowed"
+            />
+            {errors.itemCode && <p className="mt-1 text-xs text-red-500">{errors.itemCode.message}</p>}
+          </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Type *</label>
             <select {...register('type')} className={inputClass}>
@@ -141,31 +222,34 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
               <option value="Reel">Reel</option>
               <option value="PrintedPaper">Printed Paper</option>
               <option value="FinishedGood">Finished Good</option>
+              <option value="Consumable">Consumable</option>
+              <option value="RawMaterial">Raw Material</option>
             </select>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
             <select {...register('category')} className={inputClass}>
               {STOCK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unit of Measure *</label>
-          <select {...register('unitOfMeasure')} className={inputClass}>
-            <option value="KG">KG</option>
-            <option value="Sheets">Sheets</option>
-            <option value="Rolls">Rolls</option>
-            <option value="Drums">Drums</option>
-            <option value="Coils">Coils</option>
-            <option value="Bundles">Bundles</option>
-            <option value="PCS">PCS</option>
-          </select>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unit of Measure *</label>
+            <select {...register('unitOfMeasure')} className={inputClass}>
+              <option value="KG">KG</option>
+              <option value="Sheets">Sheets</option>
+              <option value="Rolls">Rolls</option>
+              <option value="Drums">Drums</option>
+              <option value="Coils">Coils</option>
+              <option value="Bundles">Bundles</option>
+              <option value="PCS">PCS</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Reel Consumption (only for Corrugated Rolls) */}
       {isCorrugatedRolls && (
         <div className="space-y-4 pt-2">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-amber-300 dark:border-amber-700 pb-2 flex items-center gap-2">

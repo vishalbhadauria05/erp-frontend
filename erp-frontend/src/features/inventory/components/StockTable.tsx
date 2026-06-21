@@ -51,6 +51,9 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock, onDelete
               <tr key={record._id} className="hover:bg-gray-50 dark:bg-black transition-colors">
                 <td className="px-6 py-4">
                   <div className="font-medium text-gray-900 dark:text-gray-100">{item.itemName}</div>
+                  {item.brand && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Brand: {item.brand}</div>
+                  )}
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Code: {item.itemCode}</div>
                 </td>
                 <td className="px-6 py-4">

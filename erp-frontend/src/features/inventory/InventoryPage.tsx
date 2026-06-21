@@ -73,14 +73,15 @@ export function InventoryPage() {
           <button
             onClick={() => {
               const exportData = (inventoryData?.data || []).map((r: any) => ({
-                'Item Name': r.itemRef?.name || r.name || '',
+                'Item Name': r.itemRef?.itemName || '',
+                'Brand': r.itemRef?.brand || '',
                 'Category': r.itemRef?.category || r.category || '',
                 'GSM': r.itemRef?.specifications?.gsm || '',
                 'Dimensions': r.itemRef?.specifications?.dimensions || '',
                 'Current Stock': r.currentStock || 0,
                 'Reorder Level': r.reorderLevel || 0,
-                'Unit': r.unit || '',
-                'Warehouse': r.warehouse || '',
+                'Unit': r.itemRef?.unitOfMeasure || '',
+                'Warehouse': r.warehouseLocation || '',
               }));
               exportToExcel(exportData, `Inventory_${new Date().toISOString().slice(0,10)}`, 'Inventory');
             }}

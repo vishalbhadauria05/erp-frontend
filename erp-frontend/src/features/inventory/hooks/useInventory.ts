@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getInventoryByCategory, getInventoryCategories, addStockTransaction, getLedger, createNewItem, deleteInventoryItem } from '../../../services/api/inventory';
-import type { StockTransaction } from '../types';
 
 export function useInventoryCategories() {
   return useQuery({

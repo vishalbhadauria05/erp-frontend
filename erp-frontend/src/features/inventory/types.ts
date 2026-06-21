@@ -11,6 +11,7 @@ export interface InventoryItem {
   _id: string;
   itemCode: string;
   itemName: string;
+  brand?: string;
   type: ItemType;
   category: string;
   specifications: ItemSpecifications;

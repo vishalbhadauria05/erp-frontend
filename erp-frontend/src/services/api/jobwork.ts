@@ -5,7 +5,8 @@ const ENDPOINT = "/jobwork";
 export interface JobWork {
   _id: string;
   jobNumber: string;
-  jobType: "Printed" | "Printed+SpotUV";
+  jobType: "Printed" | "Printed+SpotUV" | "Printed+Laminated";
+  sourceOrderRef?: string | null;
   inventoryRef: any;
   materialName: string;
   quantity: number;
@@ -17,7 +18,8 @@ export interface JobWork {
 
 export interface CreateJobWorkData {
   jobNumber: string;
-  jobType: "Printed" | "Printed+SpotUV";
+  jobType: "Printed" | "Printed+SpotUV" | "Printed+Laminated";
+  sourceOrderRef?: string | null;
   inventoryRef: string;
   quantity: number;
 }

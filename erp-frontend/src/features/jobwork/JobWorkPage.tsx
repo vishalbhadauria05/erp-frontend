@@ -14,7 +14,7 @@ export function JobWorkPage() {
 
   // Form state
   const [jobNumber, setJobNumber] = useState('');
-  const [jobType, setJobType] = useState<'Printed' | 'Printed+SpotUV'>('Printed');
+  const [jobType, setJobType] = useState<'Printed' | 'Printed+SpotUV' | 'Printed+Laminated'>('Printed');
   const [selectedInventory, setSelectedInventory] = useState('');
   const [quantity, setQuantity] = useState('');
 
@@ -215,7 +215,9 @@ export function JobWorkPage() {
                         <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           job.jobType === 'Printed'
                             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                            : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
+                            : job.jobType === 'Printed+Laminated'
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                              : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                         }`}>
                           <Printer size={12} />
                           {job.jobType}
@@ -301,6 +303,7 @@ export function JobWorkPage() {
             >
               <option value="Printed">Printed</option>
               <option value="Printed+SpotUV">Printing + Spot UV</option>
+              <option value="Printed+Laminated">Printed + Laminated</option>
             </select>
           </div>
 

@@ -15,6 +15,10 @@ export interface DispatchRecord {
   senderName: string;
   items: DispatchItem[];
   status: 'Pending' | 'Dispatched' | 'Delivered';
+  sourceOrderRef?: string | null;
 }
 
-export type DispatchFormData = Omit<DispatchRecord, '_id' | 'dispatchNo' | 'status'>;
+export type DispatchFormData = Omit<DispatchRecord, '_id' | 'dispatchNo' | 'status'> & {
+  consumedMaterialId?: string;
+  consumedWeight?: number;
+};

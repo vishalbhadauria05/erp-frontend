@@ -7,11 +7,10 @@ import { Calculator } from 'lucide-react';
 import { getItems } from '../../../services/api/items';
 import type { Item } from '../../items/types';
 
-const isPositiveNumber = (val: string) => !val || (!isNaN(Number(val)) && Number(val) > 0);
-
 const schema = z.object({
   orderNumber: z.string().min(3, 'Order number must be at least 3 characters'),
   customerName: z.string().min(2, 'Customer name is required'),
+  itemBrand: z.string().min(1, 'Item brand is required'),
   itemName: z.string().min(2, 'Item name is required'),
   quantityOrdered: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0 && Number.isInteger(Number(val)), 'Valid whole number > 0 required'),
   printed: z.boolean(),
@@ -63,6 +62,7 @@ const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-neutral
 export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormProps) {
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState('');
 
   useEffect(() => {
     getItems().then(res => setItems(res.data || [])).catch(() => {});
@@ -73,6 +73,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
     defaultValues: {
       orderNumber: '',
       customerName: '',
+      itemBrand: '',
       itemName: '',
       quantityOrdered: '',
       printed: false,
@@ -103,15 +104,33 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
     },
   });
 
+  const itemBrands = Array.from(
+    new Set(items.map((item) => item.brand?.trim()).filter((brand): brand is string => Boolean(brand)))
+  ).sort((a, b) => a.localeCompare(b));
+
+  const filteredItems = selectedBrand
+    ? items.filter((item) => item.brand?.trim() === selectedBrand)
+    : [];
+
+  const handleBrandSelect = (brand: string) => {
+    setSelectedBrand(brand);
+    setSelectedItem(null);
+    setValue('itemBrand', brand, { shouldValidate: true });
+    setValue('itemName', '', { shouldValidate: true });
+    setValue('boxesPerSheet', '1');
+  };
+
   // When an item is selected, auto-populate box specs
   const handleItemSelect = (itemId: string) => {
     const item = items.find(i => i._id === itemId);
     if (!item) {
       setSelectedItem(null);
+      setValue('itemName', '', { shouldValidate: true });
       return;
     }
     setSelectedItem(item);
-    setValue('itemName', item.itemName);
+    setValue('itemBrand', item.brand || selectedBrand, { shouldValidate: true });
+    setValue('itemName', item.itemName, { shouldValidate: true });
 
     const bs = item.boxSpecification;
     if (bs) {
@@ -197,14 +216,33 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           </FormField>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <FormField label="Select Item from Master *" error={errors.itemName?.message}>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <FormField label="Item Brand *" error={errors.itemBrand?.message}>
             <select
-              onChange={(e) => handleItemSelect(e.target.value)}
+              value={selectedBrand}
+              onChange={(e) => handleBrandSelect(e.target.value)}
               className={inputClass}
             >
-              <option value="">— Select an Item —</option>
-              {items.map(item => (
+              <option value="">— Select Brand —</option>
+              {itemBrands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+            <input type="hidden" {...register('itemBrand')} />
+          </FormField>
+          <FormField label="Item Name *" error={errors.itemName?.message}>
+            <select
+              value={selectedItem?._id ?? ''}
+              onChange={(e) => handleItemSelect(e.target.value)}
+              className={inputClass}
+              disabled={!selectedBrand}
+            >
+              <option value="">
+                {selectedBrand ? '— Select Item —' : '— Select brand first —'}
+              </option>
+              {filteredItems.map(item => (
                 <option key={item._id} value={item._id}>
                   {item.itemName} ({item.itemCode})
                 </option>

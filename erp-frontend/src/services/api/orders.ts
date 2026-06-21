@@ -44,6 +44,22 @@ export async function updateDelivery(
   return response.data;
 }
 
+export async function createJobWorkFromOrder(
+  id: string,
+  data: { inventoryRef: string; quantity: number; jobNumber?: string }
+): Promise<any> {
+  const response = await api.post(`${ENDPOINT}/${id}/jobwork`, data);
+  return response.data;
+}
+
+export async function createDispatchFromOrder(
+  id: string,
+  data: { customerAddress: string; dispatchDate?: string; quantity: number; senderName?: string }
+): Promise<any> {
+  const response = await api.post(`${ENDPOINT}/${id}/dispatch`, data);
+  return response.data;
+}
+
 export async function deleteOrder(id: string): Promise<void> {
   await api.delete(`${ENDPOINT}/${id}`);
 }
