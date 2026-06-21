@@ -1,6 +1,7 @@
 export interface OrderFormData {
   orderNumber: string;
   customerName: string;
+  itemBrand?: string;
   itemName: string;
   itemSerialNumber: string;
   dieSerialNumber: string;
