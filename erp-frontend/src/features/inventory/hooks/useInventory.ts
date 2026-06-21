@@ -27,7 +27,7 @@ export function useLedger(inventoryId: string | null) {
 export function useAddStockTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<StockTransaction, '_id' | 'date'>) => addStockTransaction(data),
+    mutationFn: (data: any) => addStockTransaction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['inventoryLedger'] });

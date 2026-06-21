@@ -151,6 +151,8 @@ export function InventoryPage() {
             unit={selectedRecord.itemRef.unitOfMeasure}
             gsm={selectedRecord.itemRef.specifications?.gsm}
             dimensions={selectedRecord.itemRef.specifications?.dimensions}
+            category={selectedRecord.itemRef.category}
+            linkedReels={selectedRecord.itemRef.linkedReels}
             isSubmitting={addStockMutation.isPending}
             onSubmit={(data) => {
               addStockMutation.mutate(data, {

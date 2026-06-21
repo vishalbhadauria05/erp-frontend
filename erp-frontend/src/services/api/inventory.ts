@@ -21,7 +21,7 @@ export async function getInventoryByCategory(category: string): Promise<{ data: 
   }
 }
 
-export async function addStockTransaction(data: Omit<StockTransaction, '_id' | 'date'>): Promise<{ data: StockTransaction }> {
+export async function addStockTransaction(data: any): Promise<{ data: StockTransaction }> {
   const res = await api.post('/inventory/transactions', data);
   return { data: res.data.data };
 }

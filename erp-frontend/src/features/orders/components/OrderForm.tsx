@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { OrderFormData } from '../types';
 import { Calculator } from 'lucide-react';
+import { getItems } from '../../../services/api/items';
+import type { Item } from '../../items/types';
 
 const isPositiveNumber = (val: string) => !val || (!isNaN(Number(val)) && Number(val) > 0);
 
@@ -11,19 +13,9 @@ const schema = z.object({
   orderNumber: z.string().min(3, 'Order number must be at least 3 characters'),
   customerName: z.string().min(2, 'Customer name is required'),
   itemName: z.string().min(2, 'Item name is required'),
-  itemSerialNumber: z.string().optional(),
-  dieSerialNumber: z.string().optional(),
   quantityOrdered: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0 && Number.isInteger(Number(val)), 'Valid whole number > 0 required'),
-  boxType: z.string().min(1, 'Please select a Box Type'),
   printed: z.boolean(),
   laminated: z.boolean(),
-  length: z.string().refine(isPositiveNumber, 'Must be > 0'),
-  breadth: z.string().refine(isPositiveNumber, 'Must be > 0'),
-  height: z.string().refine(isPositiveNumber, 'Must be > 0'),
-  sheetLength: z.string().refine(isPositiveNumber, 'Must be > 0'),
-  sheetBreadth: z.string().refine(isPositiveNumber, 'Must be > 0'),
-  ply: z.string().optional(),
-  gsm: z.string().optional(),
   boxesPerSheet: z.string().optional(),
   duplexLength: z.string().optional(),
   duplexBreadth: z.string().optional(),
@@ -69,25 +61,22 @@ function FormField({ label, error, children }: { label: string; error?: string; 
 const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-neutral-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-inner';
 
 export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormProps) {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
+  const [items, setItems] = useState<Item[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  useEffect(() => {
+    getItems().then(res => setItems(res.data || [])).catch(() => {});
+  }, []);
+
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       orderNumber: '',
       customerName: '',
       itemName: '',
-      itemSerialNumber: '',
-      dieSerialNumber: '',
       quantityOrdered: '',
-      boxType: '',
       printed: false,
       laminated: false,
-      length: '',
-      breadth: '',
-      height: '',
-      sheetLength: '',
-      sheetBreadth: '',
-      ply: '',
-      gsm: '',
       boxesPerSheet: '1',
       duplexLength: '',
       duplexBreadth: '',
@@ -114,11 +103,37 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
     },
   });
 
-  const onValidSubmit = (values: FormValues) => {
-  console.log("Submitting Order:", values);
+  // When an item is selected, auto-populate box specs
+  const handleItemSelect = (itemId: string) => {
+    const item = items.find(i => i._id === itemId);
+    if (!item) {
+      setSelectedItem(null);
+      return;
+    }
+    setSelectedItem(item);
+    setValue('itemName', item.itemName);
 
-  onSubmit(values as unknown as OrderFormData);
-};
+    const bs = item.boxSpecification;
+    if (bs) {
+      setValue('boxesPerSheet', String(bs.boxesPerSheet || 1));
+    }
+  };
+
+  const onValidSubmit = (values: FormValues) => {
+    // Attach box spec info from selected item
+    const payload: any = { ...values };
+    if (selectedItem?.boxSpecification) {
+      payload.boxType = selectedItem.boxSpecification.boxType || '';
+      payload.itemSerialNumber = selectedItem.boxSpecification.itemSerialNumber || '';
+      payload.dieSerialNumber = selectedItem.boxSpecification.dieSerialNumber || '';
+      payload.length = String(selectedItem.boxSpecification.length || '');
+      payload.breadth = String(selectedItem.boxSpecification.breadth || '');
+      payload.height = String(selectedItem.boxSpecification.height || '');
+      payload.sheetLength = String(selectedItem.boxSpecification.sheetLength || '');
+      payload.sheetBreadth = String(selectedItem.boxSpecification.sheetBreadth || '');
+    }
+    onSubmit(payload as unknown as OrderFormData);
+  };
 
   const parseNum = (val: string | undefined) => parseFloat(val || '0');
   
@@ -180,67 +195,58 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           <FormField label="Customer Name *" error={errors.customerName?.message}>
             <input {...register('customerName')} placeholder="Customer Name" className={inputClass} />
           </FormField>
-          <FormField label="Item Name *" error={errors.itemName?.message}>
-            <input {...register('itemName')} placeholder="Item Description" className={inputClass} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <FormField label="Select Item from Master *" error={errors.itemName?.message}>
+            <select
+              onChange={(e) => handleItemSelect(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">— Select an Item —</option>
+              {items.map(item => (
+                <option key={item._id} value={item._id}>
+                  {item.itemName} ({item.itemCode})
+                </option>
+              ))}
+            </select>
+            <input type="hidden" {...register('itemName')} />
           </FormField>
           <FormField label="Quantity Ordered *" error={errors.quantityOrdered?.message}>
             <input {...register('quantityOrdered')} type="number" min="0" placeholder="Qty" className={inputClass} />
           </FormField>
         </div>
+
+        {/* Show selected item's box specs as read-only info */}
+        {selectedItem?.boxSpecification && (
+          <div className="mt-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
+            <p className="text-xs font-semibold text-blue-800 dark:text-blue-400 uppercase tracking-wider mb-2">Box Specs (from Item Master)</p>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 text-xs text-gray-700 dark:text-gray-300">
+              {selectedItem.boxSpecification.boxType && (
+                <div><span className="text-gray-500 dark:text-gray-400">Type:</span> <strong>{selectedItem.boxSpecification.boxType}</strong></div>
+              )}
+              {selectedItem.boxSpecification.length ? (
+                <div><span className="text-gray-500 dark:text-gray-400">L×B×H:</span> <strong>{selectedItem.boxSpecification.length}×{selectedItem.boxSpecification.breadth}×{selectedItem.boxSpecification.height}</strong></div>
+              ) : null}
+              {selectedItem.boxSpecification.sheetLength ? (
+                <div><span className="text-gray-500 dark:text-gray-400">Sheet:</span> <strong>{selectedItem.boxSpecification.sheetLength}×{selectedItem.boxSpecification.sheetBreadth}</strong></div>
+              ) : null}
+              {selectedItem.boxSpecification.boxesPerSheet ? (
+                <div><span className="text-gray-500 dark:text-gray-400">Box/Sheet:</span> <strong>{selectedItem.boxSpecification.boxesPerSheet}</strong></div>
+              ) : null}
+              {selectedItem.boxSpecification.itemSerialNumber && (
+                <div><span className="text-gray-500 dark:text-gray-400">Item S/N:</span> <strong>{selectedItem.boxSpecification.itemSerialNumber}</strong></div>
+              )}
+              {selectedItem.boxSpecification.dieSerialNumber && (
+                <div><span className="text-gray-500 dark:text-gray-400">Die S/N:</span> <strong>{selectedItem.boxSpecification.dieSerialNumber}</strong></div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>2. Box Specifications</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <FormField label="Box Type *" error={errors.boxType?.message}>
-            <select {...register('boxType')} className={inputClass}>
-              <option value="">Select Type</option>
-              <option value="Pizza Type">Pizza Type</option>
-              <option value="Flap Type">Flap Type</option>
-              <option value="Carton Type">Carton Type</option>
-              <option value="Ghera Patti">Ghera Patti</option>
-              <option value="Z Patti">Z Patti</option>
-            </select>
-          </FormField>
-          <FormField label="Boxes Per Sheet" error={errors.boxesPerSheet?.message}>
-            <select {...register('boxesPerSheet')} className={inputClass}>
-              <option value="0.5">0.5</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-            </select>
-          </FormField>
-          <FormField label="Item Serial No." error={errors.itemSerialNumber?.message}>
-            <input {...register('itemSerialNumber')} className={inputClass} />
-          </FormField>
-          <FormField label="Die Serial No." error={errors.dieSerialNumber?.message}>
-            <input {...register('dieSerialNumber')} className={inputClass} />
-          </FormField>
-        </div>
-        <div className="grid grid-cols-5 gap-3">
-          <FormField label="Length (in)" error={errors.length?.message}>
-            <input {...register('length')} type="number" min="0" step="0.1" className={inputClass} />
-          </FormField>
-          <FormField label="Breadth (in)" error={errors.breadth?.message}>
-            <input {...register('breadth')} type="number" min="0" step="0.1" className={inputClass} />
-          </FormField>
-          <FormField label="Height (in)" error={errors.height?.message}>
-            <input {...register('height')} type="number" min="0" step="0.1" className={inputClass} />
-          </FormField>
-          <FormField label="Sheet Length" error={errors.sheetLength?.message}>
-            <input {...register('sheetLength')} type="number" min="0" step="0.1" className={inputClass} />
-          </FormField>
-          <FormField label="Sheet Breadth" error={errors.sheetBreadth?.message}>
-            <input {...register('sheetBreadth')} type="number" min="0" step="0.1" className={inputClass} />
-          </FormField>
-        </div>
-      </div>
-
-      <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>3. Duplex / Paper Board Cost</h3>
+        <h3 className={sectionTitleClass}>2. Duplex / Paper Board Cost</h3>
         <div className="grid grid-cols-4 gap-4 mb-4">
           <FormField label="Length (in)" error={errors.duplexLength?.message}>
             <input {...register('duplexLength')} type="number" step="any" min="0" className={inputClass} />
@@ -264,7 +270,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
       </div>
 
       <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>4. 2-Ply Cost</h3>
+        <h3 className={sectionTitleClass}>3. 2-Ply Cost</h3>
         <div className="grid grid-cols-3 gap-4 mb-4">
           <FormField label="No. of 2-Ply" error={errors.numberOf2Ply?.message}>
             <select {...register('numberOf2Ply')} className={inputClass}>
@@ -289,7 +295,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
       </div>
 
       <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>5. Finishing & Spot UV</h3>
+        <h3 className={sectionTitleClass}>4. Finishing & Spot UV</h3>
         <div className="flex gap-6 mb-6">
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-medium">
             <input type="checkbox" {...register('printed')} className="rounded w-4 h-4 text-blue-600" /> Printed
@@ -322,7 +328,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
       </div>
 
       <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>6. Processing Costs</h3>
+        <h3 className={sectionTitleClass}>5. Processing Costs</h3>
         <div className="grid grid-cols-5 gap-3">
           <FormField label="Sheeter (₹/2Ply)"><input {...register('sheeterRate')} type="number" step="any" min="0" className={inputClass} /></FormField>
           <FormField label="Pasting (₹/Sht)"><input {...register('pastingRate')} type="number" step="any" min="0" className={inputClass} /></FormField>

@@ -49,10 +49,15 @@ export const mockItems: Item[] = [
     type: 'FinishedGood',
     category: 'Finished Boxes',
     boxSpecification: {
-      ply: '3',
-      flute: 'E-Flute',
-      boardSize: '24x24 inch',
-      boxSize: '12x12x2 inch'
+      boxType: 'Pizza Type',
+      boxesPerSheet: 2,
+      itemSerialNumber: 'SN-001',
+      dieSerialNumber: 'DIE-001',
+      length: 12,
+      breadth: 12,
+      height: 2,
+      sheetLength: 24,
+      sheetBreadth: 24,
     },
     unitOfMeasure: 'PCS',
     createdAt: '2026-02-01T10:00:00Z'

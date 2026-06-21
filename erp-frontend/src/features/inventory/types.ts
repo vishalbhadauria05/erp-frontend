@@ -15,6 +15,10 @@ export interface InventoryItem {
   category: string;
   specifications: ItemSpecifications;
   unitOfMeasure: string;
+  linkedReels?: {
+    kraft?: { inventoryId: string; ratio: number };
+    semiKraft?: { inventoryId: string; ratio: number };
+  };
 }
 
 export interface InventoryRecord {

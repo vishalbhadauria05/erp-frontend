@@ -1,14 +1,34 @@
 import { useEffect, useState } from "react";
-import { getRecentOrders, type RecentOrder } from "../../../services/api/dashboard";
+import axios from "axios";
+
+const API_URL = "http://localhost:5001/api/orders";
+
+interface Order {
+  _id: string;
+  orderNumber: string;
+  customerName: string;
+  itemName: string;
+  quantityOrdered: number;
+  status: string;
+}
 
 export function RecentOrdersTable() {
-  const [orders, setOrders] = useState<RecentOrder[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      setOrders(res.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getRecentOrders()
-      .then((res) => setOrders(res.data))
-      .finally(() => setLoading(false));
+    fetchOrders();
   }, []);
 
   if (loading) {
@@ -18,30 +38,6 @@ export function RecentOrdersTable() {
       </div>
     );
   }
-
-  if (orders.length === 0) {
-    return (
-      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/50 shadow-sm">
-        <div className="border-b border-gray-200 dark:border-gray-800 px-5 py-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Recent Orders
-          </h2>
-        </div>
-        <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          No orders yet. Create your first order to see it here.
-        </div>
-      </div>
-    );
-  }
-
-  const statusColors: Record<string, string> = {
-    Pending: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-500',
-    Approved: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
-    'In Production': 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400',
-    Completed: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400',
-    Dispatched: 'bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-400',
-    Cancelled: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
-  };
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/50 shadow-sm">
@@ -85,7 +81,7 @@ export function RecentOrdersTable() {
               </td>
 
               <td className="p-3">
-                <span className={`rounded px-2 py-1 text-xs font-medium ${statusColors[order.status] || statusColors.Pending}`}>
+                <span className="rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-500 px-2 py-1 text-xs font-medium">
                   {order.status}
                 </span>
               </td>

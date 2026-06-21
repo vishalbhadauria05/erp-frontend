@@ -16,11 +16,15 @@ const schema = z.object({
     dimensions: z.string().optional()
   }).optional(),
   boxSpecification: z.object({
-    ply: z.string().optional(),
-    flute: z.string().optional(),
-    boardSize: z.string().optional(),
-    sheetSize: z.string().optional(),
-    boxSize: z.string().optional()
+    boxType: z.string().optional(),
+    boxesPerSheet: z.string().optional(),
+    itemSerialNumber: z.string().optional(),
+    dieSerialNumber: z.string().optional(),
+    length: z.string().optional(),
+    breadth: z.string().optional(),
+    height: z.string().optional(),
+    sheetLength: z.string().optional(),
+    sheetBreadth: z.string().optional(),
   }).optional()
 });
 
@@ -41,12 +45,25 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
       type: initialData.type,
       category: initialData.category,
       unitOfMeasure: initialData.unitOfMeasure,
-      itemSpecification: initialData.itemSpecification || {},
-      boxSpecification: initialData.boxSpecification || {},
+      itemSpecification: initialData.itemSpecification || initialData.specifications || {},
+      boxSpecification: {
+        boxType: initialData.boxSpecification?.boxType || '',
+        boxesPerSheet: String(initialData.boxSpecification?.boxesPerSheet || '1'),
+        itemSerialNumber: initialData.boxSpecification?.itemSerialNumber || '',
+        dieSerialNumber: initialData.boxSpecification?.dieSerialNumber || '',
+        length: String(initialData.boxSpecification?.length || ''),
+        breadth: String(initialData.boxSpecification?.breadth || ''),
+        height: String(initialData.boxSpecification?.height || ''),
+        sheetLength: String(initialData.boxSpecification?.sheetLength || ''),
+        sheetBreadth: String(initialData.boxSpecification?.sheetBreadth || ''),
+      },
     } : {
-      type: 'RawMaterial',
+      type: 'FinishedGood',
       category: STOCK_CATEGORIES[0],
-      unitOfMeasure: 'KG'
+      unitOfMeasure: 'PCS',
+      boxSpecification: {
+        boxesPerSheet: '1',
+      }
     }
   });
 
@@ -58,8 +75,18 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
         type: initialData.type,
         category: initialData.category,
         unitOfMeasure: initialData.unitOfMeasure,
-        itemSpecification: initialData.itemSpecification || {},
-        boxSpecification: initialData.boxSpecification || {},
+        itemSpecification: initialData.itemSpecification || initialData.specifications || {},
+        boxSpecification: {
+          boxType: initialData.boxSpecification?.boxType || '',
+          boxesPerSheet: String(initialData.boxSpecification?.boxesPerSheet || '1'),
+          itemSerialNumber: initialData.boxSpecification?.itemSerialNumber || '',
+          dieSerialNumber: initialData.boxSpecification?.dieSerialNumber || '',
+          length: String(initialData.boxSpecification?.length || ''),
+          breadth: String(initialData.boxSpecification?.breadth || ''),
+          height: String(initialData.boxSpecification?.height || ''),
+          sheetLength: String(initialData.boxSpecification?.sheetLength || ''),
+          sheetBreadth: String(initialData.boxSpecification?.sheetBreadth || ''),
+        },
       });
     }
   }, [initialData, reset]);
@@ -67,10 +94,30 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
   const category = watch('category');
   const isFinishedGood = category === 'Finished Boxes';
 
+  const onFormSubmit = (data: FormValues) => {
+    const payload: any = { ...data };
+    // Convert numeric strings in boxSpecification to numbers
+    if (payload.boxSpecification) {
+      const bs = payload.boxSpecification;
+      payload.boxSpecification = {
+        boxType: bs.boxType || '',
+        boxesPerSheet: Number(bs.boxesPerSheet) || 1,
+        itemSerialNumber: bs.itemSerialNumber || '',
+        dieSerialNumber: bs.dieSerialNumber || '',
+        length: Number(bs.length) || 0,
+        breadth: Number(bs.breadth) || 0,
+        height: Number(bs.height) || 0,
+        sheetLength: Number(bs.sheetLength) || 0,
+        sheetBreadth: Number(bs.sheetBreadth) || 0,
+      };
+    }
+    onSubmit(payload as ItemFormData);
+  };
+
   const inputClass = 'w-full rounded-lg border border-gray-300 dark:border-neutral-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-inner';
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-5 p-1 pb-10">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5 p-1 pb-10">
       
       {/* Basic Info */}
       <div className="space-y-4">
@@ -78,7 +125,7 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item Name *</label>
-            <input {...register('itemName')} placeholder="e.g. Duplex Reel 350 GSM" className={inputClass} />
+            <input {...register('itemName')} placeholder="e.g. Pizza Box 12 Inch" className={inputClass} />
             {errors.itemName && <p className="mt-1 text-xs text-red-500">{errors.itemName.message}</p>}
           </div>
           <div>
@@ -136,32 +183,64 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
         </div>
       )}
 
-      {/* Box Specifications */}
+      {/* Box Specifications — same fields as Order Form Section 2 */}
       {isFinishedGood && (
         <div className="space-y-4 pt-2">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-neutral-800 pb-2">Box Specifications</h4>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ply</label>
-              <select {...register('boxSpecification.ply')} className={inputClass}>
-                <option value="">— Select —</option>
-                <option value="2">2 Ply</option>
-                <option value="3">3 Ply</option>
-                <option value="5">5 Ply</option>
-                <option value="7">7 Ply</option>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Box Type</label>
+              <select {...register('boxSpecification.boxType')} className={inputClass}>
+                <option value="">Select Type</option>
+                <option value="Pizza Type">Pizza Type</option>
+                <option value="Flap Type">Flap Type</option>
+                <option value="Carton Type">Carton Type</option>
+                <option value="Ghera Patti">Ghera Patti</option>
+                <option value="Z Patti">Z Patti</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Flute Type</label>
-              <input {...register('boxSpecification.flute')} placeholder="e.g. E-Flute, B-Flute" className={inputClass} />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Boxes Per Sheet</label>
+              <select {...register('boxSpecification.boxesPerSheet')} className={inputClass}>
+                <option value="0.5">0.5</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Board Size</label>
-              <input {...register('boxSpecification.boardSize')} placeholder="e.g. 24x24 inch" className={inputClass} />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item Serial No.</label>
+              <input {...register('boxSpecification.itemSerialNumber')} className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Box Size (L x B x H)</label>
-              <input {...register('boxSpecification.boxSize')} placeholder="e.g. 12x12x2 inch" className={inputClass} />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Die Serial No.</label>
+              <input {...register('boxSpecification.dieSerialNumber')} className={inputClass} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-5 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Length (in)</label>
+              <input {...register('boxSpecification.length')} type="number" min="0" step="0.1" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Breadth (in)</label>
+              <input {...register('boxSpecification.breadth')} type="number" min="0" step="0.1" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Height (in)</label>
+              <input {...register('boxSpecification.height')} type="number" min="0" step="0.1" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Sheet Length</label>
+              <input {...register('boxSpecification.sheetLength')} type="number" min="0" step="0.1" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Sheet Breadth</label>
+              <input {...register('boxSpecification.sheetBreadth')} type="number" min="0" step="0.1" className={inputClass} />
             </div>
           </div>
         </div>

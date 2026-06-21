@@ -2,15 +2,19 @@ export type ItemType = 'Duplex' | 'Reel' | 'PrintedPaper' | 'FinishedGood' | 'Co
 
 export interface ItemSpecification {
   gsm?: string;
-  dimensions?: string; // or size
+  dimensions?: string;
 }
 
 export interface BoxSpecification {
-  ply?: string;
-  flute?: string;
-  boardSize?: string;
-  sheetSize?: string;
-  boxSize?: string;
+  boxType?: string;
+  boxesPerSheet?: number;
+  itemSerialNumber?: string;
+  dieSerialNumber?: string;
+  length?: number;
+  breadth?: number;
+  height?: number;
+  sheetLength?: number;
+  sheetBreadth?: number;
 }
 
 export interface Item {
@@ -21,6 +25,7 @@ export interface Item {
   type: ItemType;
   category: string;
   itemSpecification?: ItemSpecification;
+  specifications?: ItemSpecification;
   boxSpecification?: BoxSpecification;
   unitOfMeasure: string;
   createdAt?: string;
@@ -35,12 +40,6 @@ export interface ItemFormData {
     gsm?: string;
     dimensions?: string;
   };
-  boxSpecification?: {
-    ply?: string;
-    flute?: string;
-    boardSize?: string;
-    sheetSize?: string;
-    boxSize?: string;
-  };
+  boxSpecification?: BoxSpecification;
   unitOfMeasure: string;
 }

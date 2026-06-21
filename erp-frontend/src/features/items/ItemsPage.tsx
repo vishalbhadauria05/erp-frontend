@@ -130,13 +130,15 @@ export function ItemsPage() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">
                         {item.type === 'FinishedGood' && item.boxSpecification ? (
                           <div className="space-y-1">
-                            {item.boxSpecification.ply && <div>{item.boxSpecification.ply} Ply {item.boxSpecification.flute ? `(${item.boxSpecification.flute})` : ''}</div>}
-                            {item.boxSpecification.boxSize && <div>Size: {item.boxSpecification.boxSize}</div>}
+                            {item.boxSpecification.boxType && <div>{item.boxSpecification.boxType}</div>}
+                            {item.boxSpecification.length ? <div>L×B×H: {item.boxSpecification.length}×{item.boxSpecification.breadth}×{item.boxSpecification.height}</div> : null}
+                            {item.boxSpecification.sheetLength ? <div>Sheet: {item.boxSpecification.sheetLength}×{item.boxSpecification.sheetBreadth}</div> : null}
+                            {item.boxSpecification.boxesPerSheet ? <div>Boxes/Sheet: {item.boxSpecification.boxesPerSheet}</div> : null}
                           </div>
-                        ) : item.itemSpecification ? (
+                        ) : (item.itemSpecification || item.specifications) ? (
                           <div className="space-y-1">
-                            {item.itemSpecification.gsm && <div>{item.itemSpecification.gsm} GSM</div>}
-                            {item.itemSpecification.dimensions && <div>{item.itemSpecification.dimensions}</div>}
+                            {(item.itemSpecification?.gsm || (item.specifications as any)?.gsm) && <div>{item.itemSpecification?.gsm || (item.specifications as any)?.gsm} GSM</div>}
+                            {(item.itemSpecification?.dimensions || (item.specifications as any)?.dimensions) && <div>{item.itemSpecification?.dimensions || (item.specifications as any)?.dimensions}</div>}
                           </div>
                         ) : (
                           <span className="text-gray-400">—</span>
