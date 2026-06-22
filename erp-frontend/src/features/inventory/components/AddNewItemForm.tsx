@@ -30,9 +30,10 @@ interface AddNewItemFormProps {
   onSubmit: (data: any) => void;
   isSubmitting: boolean;
   defaultCategory: string;
+  error?: string;
 }
 
-export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddNewItemFormProps) {
+export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory, error }: AddNewItemFormProps) {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -105,7 +106,8 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
 
     setSelectedMasterItem(item);
     setValue('brand', item.brand || selectedBrand, { shouldValidate: true });
-    setValue('itemCode', item.itemCode, { shouldValidate: true });
+    // itemCode is derived from category + GSM + dimensions by the effect below,
+    // so a variant of an existing item gets its own code instead of colliding.
     setValue('itemName', item.itemName, { shouldValidate: true });
     setValue('type', item.type, { shouldValidate: true });
     setValue('category', item.category, { shouldValidate: true });
@@ -115,7 +117,6 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
   };
 
   useEffect(() => {
-    if (selectedMasterItem) return;
     if (!category) return;
     const initials = category.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
 
@@ -129,7 +130,7 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
     }
 
     setValue('itemCode', `${initials}${suffix}`, { shouldValidate: true });
-  }, [category, gsm, dimensions, selectedMasterItem, setValue]);
+  }, [category, gsm, dimensions, setValue]);
 
   useEffect(() => {
     if (!isCorrugatedRolls) {
@@ -161,6 +162,13 @@ export function AddNewItemForm({ onSubmit, isSubmitting, defaultCategory }: AddN
 
   return (
     <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-5 p-1 pb-10">
+
+      {error && (
+        <div className="flex items-start gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2.5 text-sm text-red-700 dark:text-red-400">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Basic Info */}
       <div className="space-y-4">

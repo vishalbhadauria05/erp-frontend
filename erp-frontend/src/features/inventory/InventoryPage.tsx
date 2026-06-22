@@ -43,12 +43,14 @@ export function InventoryPage() {
   };
 
   const handleCreateNewItem = () => {
+    createItemMutation.reset();
     setSlideOverMode('createItem');
     setSlideOverOpen(true);
   };
 
   const handleCloseSlideOver = () => {
     setSlideOverOpen(false);
+    createItemMutation.reset();
     setTimeout(() => {
       setSlideOverMode(null);
       setSelectedInventoryId(null);
@@ -177,6 +179,7 @@ export function InventoryPage() {
           <AddNewItemForm
             defaultCategory={activeCategory}
             isSubmitting={createItemMutation.isPending}
+            error={(createItemMutation.error as any)?.response?.data?.message}
             onSubmit={(data) => {
               createItemMutation.mutate(data, {
                 onSuccess: () => {
