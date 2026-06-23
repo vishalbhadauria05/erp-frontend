@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertCircle, Plus, Download } from 'lucide-react';
+import { AlertCircle, Plus, Download, Search } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportToExcel';
 import { useInventoryCategories, useInventory, useAddStockTransaction, useLedger, useCreateItem, useDeleteInventoryItem } from './hooks/useInventory';
 import { StockTable } from './components/StockTable';
@@ -23,6 +23,7 @@ export function InventoryPage() {
   const [slideOverOpen, setSlideOverOpen] = useState(false);
   const [slideOverMode, setSlideOverMode] = useState<'add' | 'ledger' | 'createItem' | null>(null);
   const [selectedInventoryId, setSelectedInventoryId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Derived data for SlideOver
   const selectedRecord = inventoryData?.data.find(r => r._id === selectedInventoryId);
@@ -31,6 +32,21 @@ export function InventoryPage() {
   const categories = ['All', ...(categoriesData?.data || [])];
   
   const lowStockCount = inventoryData?.data.filter(r => r.currentStock <= r.reorderLevel).length || 0;
+
+  // Client-side search within the selected category tab.
+  const query = searchTerm.trim().toLowerCase();
+  const filteredInventory = query
+    ? (inventoryData?.data || []).filter((r) => {
+        const item = r.itemRef;
+        return (
+          item?.itemName?.toLowerCase().includes(query) ||
+          item?.itemCode?.toLowerCase().includes(query) ||
+          item?.brand?.toLowerCase().includes(query) ||
+          item?.category?.toLowerCase().includes(query) ||
+          r.warehouseLocation?.toLowerCase().includes(query)
+        );
+      })
+    : (inventoryData?.data || []);
 
   const handleAddStock = (id: string) => {
     setSelectedInventoryId(id);
@@ -130,10 +146,24 @@ export function InventoryPage() {
           </div>
         </div>
 
+        {/* Search bar */}
+        <div className="p-4 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-gray-800/50">
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search by item, code, brand, category, or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-neutral-800 bg-white dark:bg-black text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-0 dark:bg-black">
           <StockTable
-            data={inventoryData?.data || []}
+            data={filteredInventory}
             isLoading={isInventoryLoading}
             onAddStock={handleAddStock}
             onViewLedger={handleViewLedger}
