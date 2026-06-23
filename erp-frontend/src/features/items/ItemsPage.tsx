@@ -3,9 +3,11 @@ import { Plus, PackageSearch, Tag, Layers, Package, Pencil, Trash2 } from 'lucid
 import { useItems, useCreateItem, useUpdateItem, useDeleteItem } from './hooks/useItems';
 import { ItemForm } from './components/ItemForm';
 import { SlideOver } from '../../components/ui/SlideOver';
+import { useAuth } from '../auth/auth';
 import type { ItemFormData, Item } from './types';
 
 export function ItemsPage() {
+  const { isAdmin, canCreate } = useAuth();
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   const { data: itemsData, isLoading } = useItems();
   const createMutation = useCreateItem();
@@ -57,16 +59,18 @@ export function ItemsPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Item Master</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage global item definitions, brands, and specifications.</p>
         </div>
-        <button
-          onClick={() => {
-            setEditingItem(null);
-            setIsSlideOverOpen(true);
-          }}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm"
-        >
-          <Plus size={18} />
-          Add New Item
-        </button>
+        {canCreate && (
+          <button
+            onClick={() => {
+              setEditingItem(null);
+              setIsSlideOverOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm"
+          >
+            <Plus size={18} />
+            Add New Item
+          </button>
+        )}
       </div>
 
       <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden">
@@ -79,7 +83,7 @@ export function ItemsPage() {
                 <th className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100">Category</th>
                 <th className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100">Specifications</th>
                 <th className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100">UOM</th>
-                <th className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100 text-right">Actions</th>
+                {isAdmin && <th className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-100 text-right">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-neutral-800">
@@ -146,24 +150,26 @@ export function ItemsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{item.unitOfMeasure}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(item)}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                          title="Edit Item"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item._id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          title="Delete Item"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {isAdmin && (
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            title="Edit Item"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item._id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            title="Delete Item"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

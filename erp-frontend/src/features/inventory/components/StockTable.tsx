@@ -7,9 +7,11 @@ interface StockTableProps {
   onViewLedger: (id: string) => void;
   onAddStock: (id: string) => void;
   onDelete: (id: string) => void;
+  canAddStock?: boolean;
+  canDelete?: boolean;
 }
 
-export function StockTable({ data, isLoading, onViewLedger, onAddStock, onDelete }: StockTableProps) {
+export function StockTable({ data, isLoading, onViewLedger, onAddStock, onDelete, canAddStock = false, canDelete = false }: StockTableProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -91,23 +93,27 @@ export function StockTable({ data, isLoading, onViewLedger, onAddStock, onDelete
                     >
                       <History size={16} />
                     </button>
-                    <button
-                      onClick={() => onAddStock(record._id)}
-                      className="text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      + Stock
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`Delete "${item.itemName}"? This will also remove all stock transactions.`)) {
-                          onDelete(record._id);
-                        }
-                      }}
-                      className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete Item"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {canAddStock && (
+                      <button
+                        onClick={() => onAddStock(record._id)}
+                        className="text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        + Stock
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete "${item.itemName}"? This will also remove all stock transactions.`)) {
+                            onDelete(record._id);
+                          }
+                        }}
+                        className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete Item"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

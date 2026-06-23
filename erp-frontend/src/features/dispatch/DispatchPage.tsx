@@ -5,6 +5,7 @@ import { PrintableChallan } from './components/PrintableChallan';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { Search, Plus, Truck, Download } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportToExcel';
+import { useAuth } from '../auth/auth';
 import type { DispatchFormData } from './types';
 
 const statusColors: Record<string, string> = {
@@ -14,6 +15,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function DispatchPage() {
+  const { isAdmin, canCreate } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedForPrint, setSelectedForPrint] = useState<any>(null);
@@ -75,12 +77,14 @@ export function DispatchPage() {
             <Download size={18} />
             Export
           </button>
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4 mr-2" /> New Dispatch
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => setIsFormOpen(true)}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" /> New Dispatch
+            </button>
+          )}
         </div>
       </div>
 
@@ -151,7 +155,7 @@ export function DispatchPage() {
                       >
                         Print Challan
                       </button>
-                      {dispatch.status === 'Pending' && (
+                      {isAdmin && dispatch.status === 'Pending' && (
                         <button
                           onClick={() => updateStatus.mutate({ id: dispatch._id, status: 'Dispatched' })}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
@@ -159,7 +163,7 @@ export function DispatchPage() {
                           Mark Dispatched
                         </button>
                       )}
-                      {dispatch.status === 'Dispatched' && (
+                      {isAdmin && dispatch.status === 'Dispatched' && (
                         <button
                           onClick={() => updateStatus.mutate({ id: dispatch._id, status: 'Delivered' })}
                           className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"

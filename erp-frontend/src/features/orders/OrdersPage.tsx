@@ -12,6 +12,7 @@ import {
 import { useInventory } from '../inventory/hooks/useInventory';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { OrderForm } from './components/OrderForm';
+import { useAuth } from '../auth/auth';
 import type { Order, OrderFormData } from './types';
 
 const statusColors: Record<string, string> = {
@@ -40,6 +41,7 @@ type DispatchModalState = {
 };
 
 export function OrdersPage() {
+  const { isAdmin, canCreate } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeStatus, setActiveStatus] = useState('All');
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
@@ -270,13 +272,15 @@ export function OrdersPage() {
             <Download size={18} />
             Export
           </button>
-          <button
-            onClick={() => setIsSlideOverOpen(true)}
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
-          >
-            <Plus size={18} />
-            New Order
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => setIsSlideOverOpen(true)}
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
+            >
+              <Plus size={18} />
+              New Order
+            </button>
+          )}
         </div>
       </div>
 
@@ -454,7 +458,10 @@ export function OrdersPage() {
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {!isCompleted && (
+                          {!isCompleted && !isAdmin && (
+                            <span className="text-xs text-gray-400 italic">—</span>
+                          )}
+                          {!isCompleted && isAdmin && (
                             <>
                               {order.printed && !order.jobWorkRef && (
                                 <button

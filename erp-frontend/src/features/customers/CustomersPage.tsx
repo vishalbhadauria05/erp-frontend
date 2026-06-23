@@ -4,6 +4,7 @@ import { exportToExcel } from '../../utils/exportToExcel';
 import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from './hooks/useCustomers';
 import { CustomerForm } from './components/CustomerForm';
 import { SlideOver } from '../../components/ui/SlideOver';
+import { useAuth } from '../auth/auth';
 import type { Customer, CustomerFormData } from './types';
 
 function formatCurrency(amount: number) {
@@ -31,6 +32,7 @@ function EmptyState() {
 }
 
 export function CustomersPage() {
+  const { isAdmin, canCreate } = useAuth();
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [search, setSearch] = useState('');
@@ -105,13 +107,15 @@ export function CustomersPage() {
             <Download size={16} />
             Export
           </button>
-          <button
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={16} />
-            Add Customer
-          </button>
+          {canCreate && (
+            <button
+              onClick={handleOpenAdd}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              <Plus size={16} />
+              Add Customer
+            </button>
+          )}
         </div>
       </div>
 
@@ -139,7 +143,7 @@ export function CustomersPage() {
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Address</th>
                 <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Credit Limit</th>
                 <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Outstanding</th>
-                <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Actions</th>
+                {isAdmin && <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -168,24 +172,26 @@ export function CustomersPage() {
                         {customer.outstandingBalance > 0 ? formatCurrency(customer.outstandingBalance) : '—'}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenEdit(customer)}
-                          className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 dark:bg-neutral-800 hover:text-gray-600 dark:text-gray-400 transition-colors"
-                          aria-label="Edit customer"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(customer)}
-                          className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                          aria-label="Delete customer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
+                    {isAdmin && (
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEdit(customer)}
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 dark:bg-neutral-800 hover:text-gray-600 dark:text-gray-400 transition-colors"
+                            aria-label="Edit customer"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(customer)}
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                            aria-label="Delete customer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

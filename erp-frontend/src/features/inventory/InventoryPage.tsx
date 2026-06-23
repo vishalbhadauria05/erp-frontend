@@ -7,8 +7,10 @@ import { AddStockForm } from './components/AddStockForm';
 import { StockLedger } from './components/StockLedger';
 import { AddNewItemForm } from './components/AddNewItemForm';
 import { SlideOver } from '../../components/ui/SlideOver';
+import { useAuth } from '../auth/auth';
 
 export function InventoryPage() {
+  const { isAdmin, canCreate } = useAuth();
   const { data: categoriesData } = useInventoryCategories();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   
@@ -92,13 +94,15 @@ export function InventoryPage() {
             <Download size={18} />
             Export
           </button>
-          <button
-            onClick={handleCreateNewItem}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors"
-          >
-            <Plus size={18} />
-            <span>New Item Master</span>
-          </button>
+          {canCreate && (
+            <button
+              onClick={handleCreateNewItem}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors"
+            >
+              <Plus size={18} />
+              <span>New Item Master</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -128,12 +132,14 @@ export function InventoryPage() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-0 dark:bg-black">
-          <StockTable 
-            data={inventoryData?.data || []} 
-            isLoading={isInventoryLoading} 
+          <StockTable
+            data={inventoryData?.data || []}
+            isLoading={isInventoryLoading}
             onAddStock={handleAddStock}
             onViewLedger={handleViewLedger}
             onDelete={(id) => deleteItemMutation.mutate(id)}
+            canAddStock={canCreate}
+            canDelete={isAdmin}
           />
         </div>
       </div>

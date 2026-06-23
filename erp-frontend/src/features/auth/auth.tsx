@@ -1,13 +1,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../../services/api/client';
 
+export type Role = 'admin' | 'delhi' | 'finance';
+
 type User = {
   email: string;
+  role: Role | null;
 };
 
 type AuthContextValue = {
   user: User | null;
   isCheckingAuth: boolean;
+  isAdmin: boolean;
+  canCreate: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -58,6 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       isCheckingAuth,
+      isAdmin: user?.role === 'admin',
+      canCreate: user?.role === 'admin' || user?.role === 'delhi',
       login,
       logout,
     }),
