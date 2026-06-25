@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { ItemFormData, Item } from '../types';
 import { STOCK_CATEGORIES } from '../../../mocks/items';
+import type { ItemFormData, Item } from '../types';
 import { useEffect } from 'react';
 
 const schema = z.object({
