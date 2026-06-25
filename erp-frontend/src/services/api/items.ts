@@ -1,8 +1,14 @@
 import { api } from './client';
-import type { ItemFormData } from '../../features/items/types';
+import type { Item, ItemFormData } from '../../features/items/types';
 
-export async function getItems() {
-  const response = await api.get('/items');
+interface ItemsResponse {
+  success: boolean;
+  data: Item[];
+  message?: string;
+}
+
+export async function getItems(): Promise<ItemsResponse> {
+  const response = await api.get<ItemsResponse>('/items');
   return response.data;
 }
 
