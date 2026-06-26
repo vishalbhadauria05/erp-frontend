@@ -4,7 +4,7 @@ export const STOCK_CATEGORIES = [
   'Reels Kraft', 'Reels Semi Kraft', 'Duplex Bundle', 'Duplex Reel',
   'Corrugated Rolls', 'Lamination Film', 'Fevicol', 'Corrugation Gum',
   'Pasting Gum', 'Stitching Wire', 'Strapping Bundles', 'Printing Plates',
-  'Finished Boxes'
+  'Printed Paper', 'Finished Boxes'
 ];
 
 export const mockItems: Item[] = [
