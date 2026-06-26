@@ -130,9 +130,9 @@ To protect business logic, sensitive configurations, and proprietary workflows:
 
 ## Author
 
-**Adarsh Kumar**
-**Harshit Pal**
-**Vishal bhaudariya**
+**Adarsh Kumar** | 
+**Harshit Pal** |
+**Vishal Bhadauria**
 
 
 
