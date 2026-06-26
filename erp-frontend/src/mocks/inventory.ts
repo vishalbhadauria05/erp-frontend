@@ -3,7 +3,7 @@ import type { InventoryRecord, StockTransaction } from '../features/inventory/ty
 export const STOCK_CATEGORIES = [
   'Reels Kraft', 'Reels Semi Kraft', 'Duplex Bundle', 'Duplex Reel',
   'Corrugated Rolls', 'Lamination Film', 'Printing Plates',
-  'Printed Duplex Board', 'Printed Kraft'
+  'Printed Duplex Board', 'Printed Kraft', 'Printed Paper'
 ];
 
 export const mockInventory: InventoryRecord[] = [
