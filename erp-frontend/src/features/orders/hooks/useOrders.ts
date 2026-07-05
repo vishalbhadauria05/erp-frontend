@@ -45,6 +45,7 @@ export function useDeleteOrder() {
     mutationFn: (id: string) => deleteOrder(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }
