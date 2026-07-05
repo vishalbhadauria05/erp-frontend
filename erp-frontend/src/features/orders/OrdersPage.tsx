@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, FileText, Package, CheckCircle2, Truck, Download, Printer, Send, AlertTriangle } from 'lucide-react';
+import { Plus, Search, FileText, Package, CheckCircle2, Truck, Download, Printer, Send, AlertTriangle, Trash2 } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportToExcel';
 import {
   useOrders,
@@ -8,6 +8,7 @@ import {
   useUpdateDelivery,
   useCreateOrderJobWork,
   useCreateOrderDispatch,
+  useDeleteOrder,
 } from './hooks/useOrders';
 import { useInventory } from '../inventory/hooks/useInventory';
 import { SlideOver } from '../../components/ui/SlideOver';
@@ -49,6 +50,7 @@ export function OrdersPage() {
   const [deliveryInput, setDeliveryInput] = useState('');
   const [jobModal, setJobModal] = useState<JobModalState | null>(null);
   const [dispatchModal, setDispatchModal] = useState<DispatchModalState | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ orderId: string; orderNumber: string; error: string } | null>(null);
 
   const { data: ordersData, isLoading, isError } = useOrders();
   const { data: inventoryData } = useInventory('All');
@@ -57,6 +59,7 @@ export function OrdersPage() {
   const updateDeliveryMutation = useUpdateDelivery();
   const createOrderJobMutation = useCreateOrderJobWork();
   const createOrderDispatchMutation = useCreateOrderDispatch();
+  const deleteOrderMutation = useDeleteOrder();
 
   const orders = ordersData?.data || [];
   const inventoryItems = inventoryData?.data || [];
@@ -102,6 +105,19 @@ export function OrdersPage() {
 
   const handleMarkCompleted = (orderId: string) => {
     updateStatusMutation.mutate({ id: orderId, status: 'Completed' });
+  };
+
+  const handleDeleteOrder = () => {
+    if (!deleteModal) return;
+    deleteOrderMutation.mutate(deleteModal.orderId, {
+      onSuccess: () => setDeleteModal(null),
+      onError: (error: any) => {
+        setDeleteModal({
+          ...deleteModal,
+          error: error?.response?.data?.message || 'Failed to delete order.',
+        });
+      },
+    });
   };
 
   const openDeliveryModal = (order: any) => {
@@ -378,6 +394,8 @@ export function OrdersPage() {
               ) : (
                 filteredOrders.map((order) => {
                   const isCompleted = order.status === 'Completed' || order.status === 'Dispatched' || order.status === 'Cancelled';
+                  // Orders can only be deleted before they enter production (sent to job work) and before they are dispatched.
+                  const canDelete = !order.jobWorkRef && !order.dispatchRef && order.status !== 'Dispatched';
                   const qtyOrdered = Number(order.quantityOrdered) || 0;
                   const qtyDelivered = order.quantityDelivered || 0;
                   const qtyRemaining = order.quantityRemaining ?? Math.max(0, qtyOrdered - qtyDelivered);
@@ -458,54 +476,68 @@ export function OrdersPage() {
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {!isCompleted && !isAdmin && (
-                            <span className="text-xs text-gray-400 italic">—</span>
-                          )}
-                          {!isCompleted && isAdmin && (
+                          {isAdmin ? (
                             <>
-                              {order.printed && !order.jobWorkRef && (
+                              {!isCompleted && (
+                                <>
+                                  {order.printed && !order.jobWorkRef && (
+                                    <button
+                                      onClick={() => openJobModal(order)}
+                                      disabled={createOrderJobMutation.isPending}
+                                      className="inline-flex items-center gap-1 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50 transition-colors"
+                                      title="Send to job work"
+                                    >
+                                      <Printer size={13} />
+                                      Job
+                                    </button>
+                                  )}
+                                  {getOrderReadyForDispatch(order) && (
+                                    <button
+                                      onClick={() => openDispatchModal(order)}
+                                      disabled={createOrderDispatchMutation.isPending}
+                                      className="inline-flex items-center gap-1 rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1.5 text-xs font-medium text-violet-700 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 disabled:opacity-50 transition-colors"
+                                      title="Send to dispatch"
+                                    >
+                                      <Send size={13} />
+                                      Dispatch
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => openDeliveryModal(order)}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                    title="Update delivery"
+                                  >
+                                    <Truck size={13} />
+                                    Deliver
+                                  </button>
+                                  <button
+                                    onClick={() => handleMarkCompleted(order._id)}
+                                    disabled
+                                    className="inline-flex items-center gap-1 rounded-lg border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/50 px-2.5 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-500 cursor-not-allowed transition-colors"
+                                    title="Completion happens automatically once the dispatch is delivered"
+                                  >
+                                    <CheckCircle2 size={13} />
+                                    Complete
+                                  </button>
+                                </>
+                              )}
+                              {canDelete && (
                                 <button
-                                  onClick={() => openJobModal(order)}
-                                  disabled={createOrderJobMutation.isPending}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50 transition-colors"
-                                  title="Send to job work"
+                                  onClick={() => setDeleteModal({ orderId: order._id, orderNumber: order.orderNumber, error: '' })}
+                                  disabled={deleteOrderMutation.isPending}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-2.5 py-1.5 text-xs font-medium text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50 transition-colors"
+                                  title="Delete order"
                                 >
-                                  <Printer size={13} />
-                                  Job
+                                  <Trash2 size={13} />
+                                  Delete
                                 </button>
                               )}
-                              {getOrderReadyForDispatch(order) && (
-                                <button
-                                  onClick={() => openDispatchModal(order)}
-                                  disabled={createOrderDispatchMutation.isPending}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1.5 text-xs font-medium text-violet-700 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40 disabled:opacity-50 transition-colors"
-                                  title="Send to dispatch"
-                                >
-                                  <Send size={13} />
-                                  Dispatch
-                                </button>
+                              {isCompleted && !canDelete && (
+                                <span className="text-xs text-gray-400 italic">Done</span>
                               )}
-                              <button
-                                onClick={() => openDeliveryModal(order)}
-                                className="inline-flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                                title="Update delivery"
-                              >
-                                <Truck size={13} />
-                                Deliver
-                              </button>
-                              <button
-                                onClick={() => handleMarkCompleted(order._id)}
-                                disabled={updateStatusMutation.isPending}
-                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:opacity-50 transition-colors"
-                                title="Mark as completed"
-                              >
-                                <CheckCircle2 size={13} />
-                                Complete
-                              </button>
                             </>
-                          )}
-                          {isCompleted && (
-                            <span className="text-xs text-gray-400 italic">Done</span>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">{isCompleted ? 'Done' : '—'}</span>
                           )}
                         </div>
                       </td>
@@ -713,6 +745,49 @@ export function OrdersPage() {
                 className="flex-1 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-violet-700 disabled:opacity-60 transition-colors shadow-sm"
               >
                 {createOrderDispatchMutation.isPending ? 'Creating...' : 'Create Dispatch'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-gray-200 dark:border-neutral-800">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                <Trash2 size={18} className="text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                Delete Order
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 mt-2">
+              Are you sure you want to delete order{' '}
+              <span className="font-medium text-gray-900 dark:text-gray-100">{deleteModal.orderNumber}</span>?
+              This action cannot be undone.
+            </p>
+
+            {deleteModal.error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                <AlertTriangle size={15} />
+                {deleteModal.error}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModal(null)}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-neutral-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteOrder}
+                disabled={deleteOrderMutation.isPending}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
+              >
+                {deleteOrderMutation.isPending ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
