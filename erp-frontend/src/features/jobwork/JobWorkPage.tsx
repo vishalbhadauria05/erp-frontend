@@ -2,11 +2,20 @@ import { useState } from 'react';
 import { Plus, CheckCircle2, Printer, Download, Package, AlertTriangle } from 'lucide-react';
 import { useJobWorks, useCreateJobWork, useCompleteJobWork } from './hooks/useJobWork';
 import { useInventory } from '../inventory/hooks/useInventory';
+import { useItems } from '../items/hooks/useItems';
 import { SlideOver } from '../../components/ui/SlideOver';
 import { exportToExcel } from '../../utils/exportToExcel';
 import { useAuth } from '../auth/auth';
 
 const STATUS_FILTERS = ['All', 'Pending', 'Completed'];
+
+// Print prefix used to name the produced finished stock (mirrors the backend).
+const getPrintedPrefix = (jobType: string) =>
+  jobType === 'Printed+Laminated'
+    ? 'Printed + Laminated'
+    : jobType === 'Printed+SpotUV'
+      ? 'Printed + Spot UV'
+      : 'Printed';
 
 export function JobWorkPage() {
   const { isAdmin, canCreate } = useAuth();
@@ -20,13 +29,22 @@ export function JobWorkPage() {
   const [selectedInventory, setSelectedInventory] = useState('');
   const [quantity, setQuantity] = useState('');
 
+  // Complete-job modal state
+  const [completeModal, setCompleteModal] = useState<{ job: any; outputItemId: string; sheets: string; error: string } | null>(null);
+
   const { data: jobsData, isLoading } = useJobWorks();
   const { data: inventoryData } = useInventory('All');
+  const { data: itemsData } = useItems();
   const createMutation = useCreateJobWork();
   const completeMutation = useCompleteJobWork();
 
   const jobs = jobsData?.data || [];
   const inventoryItems = inventoryData?.data || [];
+  // Finished-item choices for completion — every Item Master item except raw materials.
+  const finishedItems = (itemsData?.data || []).filter((it: any) => it.type !== 'RawMaterial');
+  const selectedOutputItem = completeModal
+    ? finishedItems.find((it: any) => it._id === completeModal.outputItemId)
+    : undefined;
 
   // Status counts
   const statusCounts: Record<string, number> = {};
@@ -44,6 +62,7 @@ export function JobWorkPage() {
   const selectedInvItem = inventoryItems.find((i: any) => i._id === selectedInventory);
   const availableStock = selectedInvItem?.currentStock || 0;
   const materialName = selectedInvItem?.itemRef?.itemName || '';
+  const selectedUnit = selectedInvItem?.itemRef?.unitOfMeasure || '';
 
   const resetForm = () => {
     setJobNumber('');
@@ -88,9 +107,40 @@ export function JobWorkPage() {
     );
   };
 
-  const handleComplete = (id: string) => {
-    if (!confirm('Complete this job? This will create finished stock in inventory.')) return;
-    completeMutation.mutate(id);
+  const openCompleteModal = (job: any) => {
+    setCompleteModal({
+      job,
+      outputItemId: '',
+      sheets: String(job.quantity || ''),
+      error: '',
+    });
+  };
+
+  const handleConfirmComplete = () => {
+    if (!completeModal) return;
+    const sheets = Number(completeModal.sheets);
+
+    if (!completeModal.outputItemId) {
+      setCompleteModal({ ...completeModal, error: 'Please select the finished item to produce.' });
+      return;
+    }
+    if (isNaN(sheets) || sheets <= 0) {
+      setCompleteModal({ ...completeModal, error: 'Number of sheets must be a positive number.' });
+      return;
+    }
+
+    completeMutation.mutate(
+      { id: completeModal.job._id, outputItemId: completeModal.outputItemId, producedSheets: sheets },
+      {
+        onSuccess: () => setCompleteModal(null),
+        onError: (error: any) => {
+          setCompleteModal({
+            ...completeModal,
+            error: error?.response?.data?.message || 'Failed to complete job.',
+          });
+        },
+      }
+    );
   };
 
   const handleExport = () => {
@@ -212,6 +262,7 @@ export function JobWorkPage() {
                 filteredJobs.map((job: any) => {
                   const isCompleted = job.status === 'Completed';
                   const outputName = job.outputInventoryRef?.itemRef?.itemName || '—';
+                  const jobUnit = job.inventoryRef?.itemRef?.unitOfMeasure || '';
                   return (
                     <tr key={job._id} className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${isCompleted ? 'opacity-60' : ''}`}>
                       <td className="px-6 py-4 font-medium text-blue-600 whitespace-nowrap">{job.jobNumber}</td>
@@ -228,7 +279,9 @@ export function JobWorkPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{job.materialName}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{job.quantity}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                        {job.quantity}{jobUnit ? ` ${jobUnit}` : ''}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           isCompleted
@@ -255,7 +308,7 @@ export function JobWorkPage() {
                         {!isCompleted ? (
                           isAdmin ? (
                             <button
-                              onClick={() => handleComplete(job._id)}
+                              onClick={() => openCompleteModal(job)}
                               disabled={completeMutation.isPending}
                               className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:opacity-50 transition-colors"
                             >
@@ -335,22 +388,31 @@ export function JobWorkPage() {
             </select>
             {selectedInventory && (
               <p className="text-xs text-gray-400 mt-1">
-                Available stock: <span className={`font-medium ${availableStock <= 0 ? 'text-red-500' : 'text-emerald-600'}`}>{availableStock}</span>
+                Available stock: <span className={`font-medium ${availableStock <= 0 ? 'text-red-500' : 'text-emerald-600'}`}>{availableStock}{selectedUnit ? ` ${selectedUnit}` : ''}</span>
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Quantity *</label>
-            <input
-              type="number"
-              min="1"
-              max={availableStock}
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="Enter quantity"
-              className={inputClass}
-            />
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Quantity *{selectedUnit ? ` (${selectedUnit})` : ''}
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="1"
+                max={availableStock}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="Enter quantity"
+                className={inputClass}
+              />
+              {selectedUnit && (
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">
+                  {selectedUnit}
+                </span>
+              )}
+            </div>
             {Number(quantity) > availableStock && availableStock > 0 && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                 <AlertTriangle size={12} />
@@ -367,7 +429,7 @@ export function JobWorkPage() {
                 <strong>{Number(quantity)}</strong> units of <strong>{materialName}</strong> will be consumed.
               </p>
               <p className="text-blue-700 dark:text-blue-400 mt-1">
-                After completion, <strong>{jobType} ({materialName})</strong> will be added to inventory.
+                On completion you'll pick the finished item and enter the sheets produced.
               </p>
             </div>
           )}
@@ -381,6 +443,94 @@ export function JobWorkPage() {
           </button>
         </div>
       </SlideOver>
+
+      {/* Complete Job Modal */}
+      {completeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-neutral-800">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                Complete Job
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 mt-2">
+              Job <span className="font-medium text-blue-600">{completeModal.job.jobNumber}</span>{' '}
+              (<span className="font-medium">{completeModal.job.jobType}</span>) — consumed{' '}
+              <span className="font-medium">{completeModal.job.quantity}</span> of {completeModal.job.materialName}.
+            </p>
+
+            {completeModal.error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                <AlertTriangle size={15} />
+                {completeModal.error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Finished Item (from Item Master)
+                </label>
+                <select
+                  value={completeModal.outputItemId}
+                  onChange={(e) => setCompleteModal({ ...completeModal, outputItemId: e.target.value, error: '' })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">— Select finished item —</option>
+                  {finishedItems.map((it: any) => (
+                    <option key={it._id} value={it._id}>
+                      {it.itemName} ({it.category}) — {it.unitOfMeasure}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Number of Sheets Produced
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={completeModal.sheets}
+                  onChange={(e) => setCompleteModal({ ...completeModal, sheets: e.target.value, error: '' })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-400 mt-1">Produced stock is always added in sheets.</p>
+              </div>
+
+              {selectedOutputItem && Number(completeModal.sheets) > 0 && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 text-sm">
+                  <p className="text-emerald-700 dark:text-emerald-400">
+                    <strong>{Number(completeModal.sheets)}</strong> sheets of{' '}
+                    <strong>{getPrintedPrefix(completeModal.job.jobType)} ({selectedOutputItem.itemName})</strong>{' '}
+                    will be added to inventory (in Sheets).
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setCompleteModal(null)}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-neutral-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmComplete}
+                disabled={completeMutation.isPending}
+                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60 transition-colors shadow-sm"
+              >
+                {completeMutation.isPending ? 'Completing...' : 'Complete Job'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
