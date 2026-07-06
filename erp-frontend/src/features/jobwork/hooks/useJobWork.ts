@@ -23,10 +23,12 @@ export function useCreateJobWork() {
 export function useCompleteJobWork() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => completeJobWork(id),
+    mutationFn: ({ id, outputItemId, producedSheets }: { id: string; outputItemId: string; producedSheets: number }) =>
+      completeJobWork(id, { outputItemId, producedSheets }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobworks'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }

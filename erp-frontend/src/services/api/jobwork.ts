@@ -39,7 +39,15 @@ export async function createJobWork(data: CreateJobWorkData): Promise<{ data: Jo
   return response.data;
 }
 
-export async function completeJobWork(id: string): Promise<{ data: JobWork }> {
-  const response = await api.patch(`${ENDPOINT}/${id}/complete`);
+export interface CompleteJobWorkData {
+  outputItemId: string;
+  producedSheets: number;
+}
+
+export async function completeJobWork(
+  id: string,
+  data: CompleteJobWorkData
+): Promise<{ data: JobWork }> {
+  const response = await api.patch(`${ENDPOINT}/${id}/complete`, data);
   return response.data;
 }
