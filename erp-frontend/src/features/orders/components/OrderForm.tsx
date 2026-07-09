@@ -23,9 +23,9 @@ const schema = z.object({
   numberOf2Ply: z.string().optional(),
   twoPlyGsm: z.string().optional(),
   twoPlyRate: z.string().optional(),
-  spotUvSize: z.string().optional(),
-  spotUvCost: z.string().optional(),
-  spotUvSheets: z.string().optional(),
+  PrintingSize: z.string().optional(),
+  PrintingCost: z.string().optional(),
+  PrintingSheets: z.string().optional(),
   lamRollSize: z.string().optional(),
   lamSheetLength: z.string().optional(),
   lamType: z.string().optional(),
@@ -86,9 +86,9 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
       numberOf2Ply: '0',
       twoPlyGsm: '',
       twoPlyRate: '',
-      spotUvSize: '',
-      spotUvCost: '',
-      spotUvSheets: '',
+      PrintingSize: '',
+      PrintingCost: '',
+      PrintingSheets: '',
       lamRollSize: '',
       lamSheetLength: '',
       lamType: 'BOPP',
@@ -178,9 +178,9 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
   const twoPlyTotalWeight = twoPlyWeightKg * duplexQtyReq * num2Ply;
   const twoPlyTotalCost = twoPlyTotalWeight * pRate;
 
-  const spotSheets = parseNum(watch('spotUvSheets'));
-  const spotCostPer = parseNum(watch('spotUvCost'));
-  const spotUvTotalCost = spotSheets * spotCostPer;
+  const PrintingSheets = parseNum(watch('PrintingSheets'));
+  const PrintingCost = parseNum(watch('PrintingCost'));
+  const PrintingTotalCost = PrintingSheets * PrintingCost;
 
   const lamCostPerSht = parseNum(watch('lamCostPerSheet'));
   const fevicolCost = parseNum(watch('fevicolCostPerSheet'));
@@ -196,7 +196,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
 
   const processingTotal = sheeterCost + pastingCost + dieCost + stitchingCost + strappingCost;
 
-  const totalCostOverall = duplexTotalCost + twoPlyTotalCost + spotUvTotalCost + laminationTotalCost + printingCost + processingTotal;
+  const totalCostOverall = duplexTotalCost + twoPlyTotalCost + PrintingTotalCost + laminationTotalCost + printingCost + processingTotal;
   const perBoxCost = qty > 0 ? totalCostOverall / qty : 0;
 
   const sectionClass = "bg-white dark:bg-gray-800/50 p-5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm";
@@ -333,7 +333,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
       </div>
 
       <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>4. Finishing & Spot UV</h3>
+        <h3 className={sectionTitleClass}>4. Finishing & Printing</h3>
         <div className="flex gap-6 mb-6">
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-medium">
             <input type="checkbox" {...register('printed')} className="rounded w-4 h-4 text-blue-600" /> Printed
@@ -359,9 +359,9 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
         )}
 
         <div className="grid grid-cols-3 gap-4">
-          <FormField label="Spot UV Size (sq in)"><input {...register('spotUvSize')} type="number" step="any" min="0" className={inputClass} /></FormField>
-          <FormField label="Spot UV Sheets"><input {...register('spotUvSheets')} type="number" min="0" className={inputClass} /></FormField>
-          <FormField label="Cost/Sheet (₹)"><input {...register('spotUvCost')} type="number" step="any" min="0" className={inputClass} /></FormField>
+          <FormField label="Printing Size (sq in)"><input {...register('PrintingSize')} type="number" step="any" min="0" className={inputClass} /></FormField>
+          <FormField label="Printing Sheets"><input {...register('PrintingSheets')} type="number" min="0" className={inputClass} /></FormField>
+          <FormField label="Cost/Sheet (₹)"><input {...register('PrintingCost')} type="number" step="any" min="0" className={inputClass} /></FormField>
         </div>
       </div>
 
@@ -392,7 +392,7 @@ export function OrderForm({ onSubmit, isSubmitting, defaultValues }: OrderFormPr
           <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Lamination Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {laminationTotalCost.toFixed(2)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">2-Ply Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {twoPlyTotalCost.toFixed(2)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Processing Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {processingTotal.toFixed(2)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Spot UV Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {spotUvTotalCost.toFixed(2)}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-600 dark:text-gray-400">Printing Cost:</span> <span className="text-gray-900 dark:text-gray-100 font-medium">₹ {PrintingTotalCost.toFixed(2)}</span></div>
         </div>
 
         <div className="bg-white dark:bg-gray-800/50 rounded-lg p-4 flex justify-between items-center border border-blue-100 dark:border-neutral-800 shadow-sm">

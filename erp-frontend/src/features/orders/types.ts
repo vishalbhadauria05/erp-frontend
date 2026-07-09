@@ -29,9 +29,9 @@ export interface OrderFormData {
   numberOf2Ply?: string;
   twoPlyGsm?: string;
   twoPlyRate?: string;
-  spotUvSize?: string;
-  spotUvCost?: string;
-  spotUvSheets?: string;
+  PrintingSize?: string;
+  PrintingCost?: string;
+  PrintingSheets?: string;
   lamRollSize?: string;
   lamSheetLength?: string;
   lamType?: string;
