@@ -27,6 +27,13 @@ const statusColors: Record<string, string> = {
 
 const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'In Production', 'Completed', 'Dispatched', 'Cancelled'];
 
+const parseLeadingNumber = (value: unknown): number => {
+  if (typeof value === 'number') return value;
+  if (typeof value !== 'string') return 0;
+  const match = value.match(/\d+(\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+};
+
 type JobModalState = {
   order: Order;
   inventoryId: string;
@@ -38,6 +45,10 @@ type DispatchModalState = {
   order: Order;
   customerAddress: string;
   quantity: string;
+  corrugatedRollId: string;
+  corrugatedLength: string;
+  corrugatedNoOf2Ply: string;
+  corrugatedTotalSheets: string;
   error: string;
 };
 
@@ -63,6 +74,22 @@ export function OrdersPage() {
 
   const orders = ordersData?.data || [];
   const inventoryItems = inventoryData?.data || [];
+
+  // Corrugated-roll paste-up consumption for the dispatch popup.
+  const corrugatedRolls = inventoryItems.filter((i: any) => i.itemRef?.category === 'Corrugated Rolls');
+  const dispatchSelectedRoll = dispatchModal
+    ? corrugatedRolls.find((r: any) => r._id === dispatchModal.corrugatedRollId)
+    : undefined;
+  const dispatchReelSize = parseLeadingNumber((dispatchSelectedRoll as any)?.itemRef?.specifications?.dimensions);
+  const dispatchRollGsm = Number((dispatchSelectedRoll as any)?.itemRef?.specifications?.gsm) || 0;
+  const dispatchCorrugatedKG = (() => {
+    if (!dispatchModal || !dispatchSelectedRoll) return 0;
+    const length = Number(dispatchModal.corrugatedLength) || 0;
+    const ply = Number(dispatchModal.corrugatedNoOf2Ply) || 0;
+    const sheets = Number(dispatchModal.corrugatedTotalSheets) || 0;
+    if (dispatchReelSize <= 0 || dispatchRollGsm <= 0 || length <= 0 || ply <= 0 || sheets <= 0) return 0;
+    return Math.round(((dispatchReelSize * length / 1500) * dispatchRollGsm / 1000) * ply * sheets * 100) / 100;
+  })();
 
   // Count orders per status for tab badges
   const statusCounts: Record<string, number> = {};
@@ -147,6 +174,10 @@ export function OrdersPage() {
       order,
       customerAddress: '',
       quantity: String(remaining || qtyOrdered || ''),
+      corrugatedRollId: '',
+      corrugatedLength: '',
+      corrugatedNoOf2Ply: '',
+      corrugatedTotalSheets: '',
       error: '',
     });
   };
@@ -246,6 +277,20 @@ export function OrdersPage() {
       return;
     }
 
+    if (dispatchModal.corrugatedRollId) {
+      const length = Number(dispatchModal.corrugatedLength);
+      const ply = Number(dispatchModal.corrugatedNoOf2Ply);
+      const sheets = Number(dispatchModal.corrugatedTotalSheets);
+      if (!(length > 0) || !(ply > 0) || !(sheets > 0)) {
+        setDispatchModal({ ...dispatchModal, error: 'Fill length, no. of 2-ply and total sheets for the corrugated roll (or clear the roll selection).' });
+        return;
+      }
+      if (dispatchReelSize <= 0) {
+        setDispatchModal({ ...dispatchModal, error: 'Selected corrugated roll has no numeric reel size in its dimensions.' });
+        return;
+      }
+    }
+
     createOrderDispatchMutation.mutate(
       {
         id: dispatchModal.order._id,
@@ -254,6 +299,14 @@ export function OrdersPage() {
           dispatchDate: new Date().toISOString().slice(0, 10),
           quantity: qty,
           senderName: 'Amar Packers',
+          ...(dispatchModal.corrugatedRollId
+            ? {
+                corrugatedRollInventoryId: dispatchModal.corrugatedRollId,
+                corrugatedLength: Number(dispatchModal.corrugatedLength) || 0,
+                corrugatedNoOf2Ply: Number(dispatchModal.corrugatedNoOf2Ply) || 0,
+                corrugatedTotalSheets: Number(dispatchModal.corrugatedTotalSheets) || 0,
+              }
+            : {}),
         },
       },
       {
@@ -729,6 +782,91 @@ export function OrdersPage() {
                   onChange={(e) => setDispatchModal({ ...dispatchModal, quantity: e.target.value, error: '' })}
                   className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+
+              {/* Corrugated roll */}
+              <div className="pt-3 border-t border-gray-100 dark:border-neutral-800">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Corrugated Roll — paste-up <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <select
+                  value={dispatchModal.corrugatedRollId}
+                  onChange={(e) => setDispatchModal({ ...dispatchModal, corrugatedRollId: e.target.value, error: '' })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">— None (skip) —</option>
+                  {corrugatedRolls.map((r: any) => (
+                    <option key={r._id} value={r._id}>
+                      {r.itemRef?.itemName || 'Corrugated Roll'} — Stock: {r.currentStock} KG
+                    </option>
+                  ))}
+                </select>
+
+                {dispatchModal.corrugatedRollId && (
+                  <div className="mt-3 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Reel Size (auto)</label>
+                        <input
+                          readOnly
+                          value={dispatchReelSize || ''}
+                          className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-100 dark:bg-neutral-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">GSM (auto)</label>
+                        <input
+                          readOnly
+                          value={dispatchRollGsm || ''}
+                          className="w-full rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-100 dark:bg-neutral-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Length</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={dispatchModal.corrugatedLength}
+                          onChange={(e) => setDispatchModal({ ...dispatchModal, corrugatedLength: e.target.value, error: '' })}
+                          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">No. of 2-Ply</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={dispatchModal.corrugatedNoOf2Ply}
+                          onChange={(e) => setDispatchModal({ ...dispatchModal, corrugatedNoOf2Ply: e.target.value, error: '' })}
+                          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Total Sheets</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={dispatchModal.corrugatedTotalSheets}
+                          onChange={(e) => setDispatchModal({ ...dispatchModal, corrugatedTotalSheets: e.target.value, error: '' })}
+                          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+
+                    {dispatchReelSize <= 0 ? (
+                      <p className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertTriangle size={12} />
+                        This roll has no numeric reel size in its dimensions.
+                      </p>
+                    ) : dispatchCorrugatedKG > 0 ? (
+                      <div className="rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 px-3 py-2 text-sm text-amber-800 dark:text-amber-300">
+                        <strong>{dispatchCorrugatedKG} KG</strong> of {(dispatchSelectedRoll as any)?.itemRef?.itemName} will be deducted.
+                      </div>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -9,6 +9,7 @@ import {
   createJobWorkFromOrder,
   createDispatchFromOrder,
 } from '../../../services/api/orders';
+import type { CreateOrderDispatchData } from '../../../services/api/orders';
 import type { OrderFormData } from '../types';
 
 export function useOrders() {
@@ -89,7 +90,7 @@ export function useCreateOrderJobWork() {
 export function useCreateOrderDispatch() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { customerAddress: string; dispatchDate?: string; quantity: number; senderName?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateOrderDispatchData }) =>
       createDispatchFromOrder(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

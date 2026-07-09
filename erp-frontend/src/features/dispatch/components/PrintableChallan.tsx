@@ -61,6 +61,34 @@ export function PrintableChallan({ dispatchData }: PrintableChallanProps) {
           </tbody>
         </table>
 
+        {dispatchData.corrugatedConsumption?.quantityKg > 0 && (
+          <div className="mb-8">
+            <p className="text-sm font-bold text-gray-800 mb-2">Corrugated Roll Consumed (Paste-up)</p>
+            <table className="w-full text-left border-collapse border border-gray-800">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-800 px-4 py-2 text-sm font-bold">Roll</th>
+                  <th className="border border-gray-800 px-4 py-2 text-sm font-bold text-center">Reel Size</th>
+                  <th className="border border-gray-800 px-4 py-2 text-sm font-bold text-center">GSM</th>
+                  <th className="border border-gray-800 px-4 py-2 text-sm font-bold text-center">2-Ply</th>
+                  <th className="border border-gray-800 px-4 py-2 text-sm font-bold text-center">Sheets</th>
+                  <th className="border border-gray-800 px-4 py-2 text-sm font-bold text-center">Consumed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-800 px-4 py-3 text-sm font-semibold">{dispatchData.corrugatedConsumption.rollName || '—'}</td>
+                  <td className="border border-gray-800 px-4 py-3 text-sm text-center">{dispatchData.corrugatedConsumption.reelSize ?? '—'}</td>
+                  <td className="border border-gray-800 px-4 py-3 text-sm text-center">{dispatchData.corrugatedConsumption.gsm ?? '—'}</td>
+                  <td className="border border-gray-800 px-4 py-3 text-sm text-center">{dispatchData.corrugatedConsumption.noOf2Ply ?? '—'}</td>
+                  <td className="border border-gray-800 px-4 py-3 text-sm text-center">{dispatchData.corrugatedConsumption.totalSheets ?? '—'}</td>
+                  <td className="border border-gray-800 px-4 py-3 text-sm text-center font-bold">{dispatchData.corrugatedConsumption.quantityKg} KG</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="flex justify-between items-end mt-16 pt-8">
           <div className="text-center">
