@@ -52,9 +52,20 @@ export async function createJobWorkFromOrder(
   return response.data;
 }
 
+export interface CreateOrderDispatchData {
+  customerAddress: string;
+  dispatchDate?: string;
+  quantity: number;
+  senderName?: string;
+  corrugatedRollInventoryId?: string;
+  corrugatedLength?: number;
+  corrugatedNoOf2Ply?: number;
+  corrugatedTotalSheets?: number;
+}
+
 export async function createDispatchFromOrder(
   id: string,
-  data: { customerAddress: string; dispatchDate?: string; quantity: number; senderName?: string }
+  data: CreateOrderDispatchData
 ): Promise<any> {
   const response = await api.post(`${ENDPOINT}/${id}/dispatch`, data);
   return response.data;
