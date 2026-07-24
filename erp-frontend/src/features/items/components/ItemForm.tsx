@@ -95,7 +95,8 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
     }
   }, [initialData, reset]);
 
-  const { data: customers = [] } = useCustomers();
+  const { data: customersResponse } = useCustomers();
+  const customers = customersResponse?.data || [];
   const category = watch('category');
   const isFinishedGood = category === 'Finished Boxes';
 
