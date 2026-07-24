@@ -4,10 +4,12 @@ import { z } from 'zod';
 import { STOCK_CATEGORIES } from '../../../mocks/items';
 import type { ItemFormData, Item } from '../types';
 import { useEffect } from 'react';
+import { useCustomers } from '../../customers/hooks/useCustomers';
 
 const schema = z.object({
   itemName: z.string().min(2, 'Item Name is required'),
   brand: z.string().optional(),
+  customer: z.string().optional(),
   type: z.enum(['Duplex', 'Reel', 'PrintedPaper', 'FinishedGood', 'Consumable', 'RawMaterial']),
   category: z.string().min(1, 'Category is required'),
   unitOfMeasure: z.string().min(1, 'Unit is required'),
@@ -42,6 +44,7 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
     defaultValues: initialData ? {
       itemName: initialData.itemName,
       brand: initialData.brand || '',
+      customer: initialData.customer?._id || initialData.customer || '',
       type: initialData.type,
       category: initialData.category,
       unitOfMeasure: initialData.unitOfMeasure,
@@ -72,6 +75,7 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
       reset({
         itemName: initialData.itemName,
         brand: initialData.brand || '',
+        customer: initialData.customer?._id || initialData.customer || '',
         type: initialData.type,
         category: initialData.category,
         unitOfMeasure: initialData.unitOfMeasure,
@@ -91,6 +95,7 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
     }
   }, [initialData, reset]);
 
+  const { data: customers = [] } = useCustomers();
   const category = watch('category');
   const isFinishedGood = category === 'Finished Boxes';
 
@@ -131,6 +136,15 @@ export function ItemForm({ initialData, onSubmit, isSubmitting }: ItemFormProps)
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
             <input {...register('brand')} placeholder="e.g. ITC, Agarwal Paper" className={inputClass} />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Link to Customer (Optional)</label>
+            <select {...register('customer')} className={inputClass}>
+              <option value="">-- No Customer --</option>
+              {customers.map((c: any) => (
+                <option key={c._id} value={c._id}>{c.companyName}</option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -22,6 +22,7 @@ export interface Item {
   itemCode: string;
   itemName: string;
   brand?: string;
+  customer?: any;
   type: ItemType;
   category: string;
   itemSpecification?: ItemSpecification;
@@ -34,6 +35,7 @@ export interface Item {
 export interface ItemFormData {
   itemName: string;
   brand?: string;
+  customer?: string;
   type: ItemType;
   category: string;
   itemSpecification?: {
